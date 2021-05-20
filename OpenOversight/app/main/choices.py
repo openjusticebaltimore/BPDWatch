@@ -10,8 +10,7 @@ RACE_CHOICES = [('BLACK', 'Black or African American'), ('WHITE', 'White'),
                 ('Other', 'Not Applicable (Non-U.S.)'),
                 ('Not Sure', 'Not Specified')]
 
-GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
-                  ('Not Sure', 'Not Sure')]
+GENDER_CHOICES = [('Not Sure', 'Not Sure'), ('M', 'Male'), ('F', 'Female'), ('Other', 'Other')]
 
 STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
 LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]

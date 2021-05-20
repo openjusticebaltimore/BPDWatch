@@ -17,6 +17,14 @@ from ..models import Officer
 import datetime
 import re
 
+# Normalizes the "not sure" option to what it needs to be when writing to the database.
+# Note this should only be used for forms which save a record to the DB--not those that
+# are used to look up existing records.
+db_genders = list(GENDER_CHOICES)
+for index, choice in enumerate(db_genders):
+    if choice == ('Not Sure', 'Not Sure'):
+        db_genders[index] = (None, 'Not Sure')  # type: ignore
+
 
 def allowed_values(choices, empty_allowed=True):
     return [x[0] for x in choices if empty_allowed or x[0]]
@@ -199,8 +207,12 @@ class AddOfficerForm(Form):
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
-                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    gender = SelectField(
+        'Gender',
+        choices=GENDER_CHOICES,
+        coerce=lambda x: None if x == 'Not Sure' else x,
+        validators=[AnyOf(allowed_values(db_genders))]
+    )
     star_no = StringField('Badge Number', default='', validators=[
         Regexp(r'\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp(r'\w*'), Length(max=50)])
@@ -252,8 +264,12 @@ class EditOfficerForm(Form):
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', choices=RACE_CHOICES, coerce=lambda x: x or None,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', choices=GENDER_CHOICES, coerce=lambda x: x or None,
-                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    gender = SelectField(
+        'Gender',
+        choices=GENDER_CHOICES,
+        coerce=lambda x: None if x == 'Not Sure' else x,
+        validators=[AnyOf(allowed_values(db_genders))]
+    )
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     unique_internal_identifier = StringField('Unique Internal Identifier',
@@ -288,7 +304,7 @@ class AddImageForm(Form):
 
 
 class DateFieldForm(Form):
-    date_field = DateField('Date', validators=[DataRequired()])
+    date_field = DateField('Date*', validators=[DataRequired()])
     time_field = TimeField('Time', validators=[Optional()])
 
     def validate_time_field(self, field):
@@ -304,8 +320,8 @@ class LocationForm(Form):
     street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
     cross_street1 = StringField(validators=[Optional()], description='Closest cross street to where incident occurred.')
     cross_street2 = StringField(validators=[Optional()])
-    city = StringField('City', validators=[DataRequired()])
-    state = SelectField('State', choices=STATE_CHOICES,
+    city = StringField('City*', validators=[DataRequired()])
+    state = SelectField('State*', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES, False), message='Must select a state.')])
     zip_code = StringField('Zip Code',
                            validators=[Optional(),
@@ -355,7 +371,7 @@ class IncidentForm(DateFieldForm):
         description='Incident number for the organization tracking incidents')
     description = TextAreaField(validators=[Optional()])
     department = QuerySelectField(
-        'Department',
+        'Department*',
         validators=[DataRequired()],
         query_factory=dept_choices,
         get_label='name')

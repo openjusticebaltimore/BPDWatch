@@ -36,7 +36,7 @@ class BaseConfig(object):
 
     # Upload Settings
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
-    ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'jpe', 'png', 'gif'])
+    ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'jpe', 'png', 'gif', 'webp'])
 
     # User registration settings
     DISABLE_REGISTRATION = os.environ.get('DISABLE_REGISTRATION', False)
@@ -54,6 +54,7 @@ class BaseConfig(object):
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
+    SQLALCHEMY_ECHO = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     NUM_OFFICERS = 15000
     SITEMAP_URL_SCHEME = 'http'
