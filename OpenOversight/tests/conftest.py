@@ -340,9 +340,9 @@ def add_mockdata(session):
                             confirmed=True)
     session.add(test_user)
 
-    test_admin = models.User(email='test@example.org',
+    test_admin = models.User(email=ADMIN_EMAIL,
                              username='test_admin',
-                             password='testtest',
+                             password=ADMIN_PASSWORD,
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)
