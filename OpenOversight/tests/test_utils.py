@@ -33,7 +33,7 @@ def test_race_filter_select_all_black_officers(mockdata):
 
 def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    officers = OpenOversight.app.utils.grab_officers(
+    results = OpenOversight.app.utils.grab_officers(
         {'gender': ['M'], 'dept': department}
     )
 
@@ -128,7 +128,7 @@ def test_filter_by_multiple_badge_no(mockdata):
 def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     target_unique_internal_id = OpenOversight.app.models.Officer.query.filter_by(department_id=department.id).first().unique_internal_identifier
-    results = OpenOversight.app.utils.grab_officers(
+    officers = OpenOversight.app.utils.grab_officers(
         {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': target_unique_internal_id}
@@ -157,7 +157,7 @@ def test_filter_by_multiple_unique_internal_identifiers_returns_officers(mockdat
     target_officers = OpenOversight.app.models.Officer.query.filter_by(department_id=department.id).limit(2).all()
     target_unique_internal_ids = [officer.unique_internal_identifier for officer in target_officers]
     officers = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': ','.join(target_unique_internal_ids)}
     )
@@ -169,29 +169,29 @@ def test_filter_by_multiple_unique_internal_identifiers_returns_officers(mockdat
 def test_filter_by_photo_available(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officers = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': '', 'photo': ['1']}
     )
     for officer in officers:
-        assert officer.face.count() > 0
+        assert len(officer.face) > 0
 
 
 def test_filter_by_photo_not_available(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officers = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': '', 'photo': ['0']}
     )
     for officer in officers:
-        assert officer.face.count() == 0
+        assert len(officer.face) == 0
 
 
 def test_filter_min_pay(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officers = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': '', 'min_pay': '500000'}
     )
@@ -204,7 +204,7 @@ def test_filter_min_pay(mockdata):
 def test_filter_max_pay(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officers = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': '', 'max_pay': '500000'}
     )
@@ -217,7 +217,7 @@ def test_filter_max_pay(mockdata):
 def test_filter_min_and_max_pay(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officers = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': '',
          'min_pay': '400000', 'max_pay': '500000'}

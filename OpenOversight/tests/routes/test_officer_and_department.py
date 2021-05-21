@@ -1763,7 +1763,7 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session, test_p
         officer = department.officers[4]
         officer_face_count = len(officer.face)
 
-        crop_mock = MagicMock(return_value=Image.query.first())
+        crop_mock = MagicMock(return_value=Image.query.offset(1).first())
         upload_mock = MagicMock(return_value=Image.query.first())
         with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', upload_mock):
             with patch('OpenOversight.app.main.views.crop_image', crop_mock):

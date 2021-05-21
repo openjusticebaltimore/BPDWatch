@@ -271,7 +271,7 @@ def filter_by_form(form_data, officer_query, department_id=None, order=0):
 
     if form_data.get('unique_internal_identifier'):
         or_clauses = [
-            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form_data['unique_internal_identifier']))
+            Officer.unique_internal_identifier.ilike('%%{}%%'.format(uii))
             for uii in form_data['unique_internal_identifier'].split(',')
         ]
         officer_query = officer_query.filter(or_(*or_clauses))
@@ -307,7 +307,7 @@ def filter_by_form(form_data, officer_query, department_id=None, order=0):
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get('badge'):
             or_clauses = [
-                Assignment.star_no.like('%%{}%%'.format(form_data['badge']))
+                Assignment.star_no.like('%%{}%%'.format(star_no))
                 for star_no in form_data['badge'].split(',')
             ]
             officer_query = officer_query.filter(or_(*or_clauses))

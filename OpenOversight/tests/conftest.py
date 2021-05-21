@@ -20,6 +20,7 @@ from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db, Unit, Job, Officer
 from OpenOversight.app.main.choices import RACE_CHOICES
+from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 factory = Faker()
 
