@@ -549,10 +549,9 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
         form_data, Officer.query, department_id, order
     ).filter(Officer.department_id == department_id)
     officers = officers.options(selectinload(Officer.face))
-    officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
     officers = officers.paginate(page, OFFICERS_PER_PAGE, False)
     for officer in officers.items:
-        officer_face = sorted(officer.face, key=lambda x: x.featured)
+        officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 
         # could do some extra work to not lazy load images but load them all together
         # but we would want to ensure to only load the first picture of each officer
@@ -568,7 +567,7 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
 
     def gen_pagination_url(page):
         return url_for('main.list_officer', department_id=department.id,
-                       page=officers.next_num, order=order, race=form_data['race'], gender=form_data['gender'],
+                       page=page, order=order, race=form_data['race'], gender=form_data['gender'],
                        rank=form_data['rank'], min_age=form_data['min_age'], max_age=form_data['max_age'],
                        last_name=form_data['last_name'], first_name=form_data['first_name'], badge=form_data['badge'],
                        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'],

@@ -254,7 +254,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
     return url
 
 
-def filter_by_form(form_data, officer_query, department_id=None):
+def filter_by_form(form_data, officer_query, department_id=None, order=0):
     if form_data.get('last_name'):
         officer_query = officer_query.filter(
             Officer.last_name.ilike('%%{}%%'.format(form_data['last_name']))
@@ -322,36 +322,59 @@ def filter_by_form(form_data, officer_query, department_id=None):
         .options(selectinload(Officer.assignments_lazy))
     )
 
-    if form.get('photo') and all(photo in ['0', '1'] for photo in form['photo']):
+    if form_data.get('photo') and all(photo in ['0', '1'] for photo in form_data['photo']):
         face_officer_ids = set([face.officer_id for face in Face.query.all()])
-        if '0' in form['photo'] and '1' not in form['photo']:
+        if '0' in form_data['photo'] and '1' not in form_data['photo']:
             officer_query = officer_query.filter(
                 Officer.id.notin_(face_officer_ids)
             )
-        elif '1' in form['photo'] and '0' not in form['photo']:
+        elif '1' in form_data['photo'] and '0' not in form_data['photo']:
             officer_query = officer_query.filter(
                 Officer.id.in_(face_officer_ids)
             )
 
-    if form.get('max_pay') and form.get('min_pay') and float(form['max_pay']) > float(form['min_pay']):
+    # Some SQL acrobatics to left join only the most recent assignment and salary per officer
+    assignment_row_num_col = func.row_number().over(
+        partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
+    ).label('assignment_row_num')
+    assignment_subq = db.session.query(
+        Assignment.officer_id,
+        Assignment.job_id,
+        Assignment.star_date,
+        Assignment.star_no,
+        Assignment.unit_id
+    ).add_columns(assignment_row_num_col).from_self().filter(assignment_row_num_col == 1).subquery()
+    salary_row_num_col = func.row_number().over(
+        partition_by=Salary.officer_id, order_by=Salary.year.desc()
+    ).label('salary_row_num')
+    salary_subq = db.session.query(
+        Salary.officer_id,
+        Salary.salary,
+        Salary.overtime_pay,
+        Salary.year,
+    ).add_columns(salary_row_num_col).from_self().filter(salary_row_num_col == 1).subquery()
+    officer_query = officer_query.outerjoin(assignment_subq).outerjoin(salary_subq)
+
+    if form_data.get('max_pay') and form_data.get('min_pay') and float(form_data['max_pay']) > float(form_data['min_pay']):
         officer_query = officer_query.filter(
             db.and_(
-                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form['min_pay']),
-                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
+                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form_data['min_pay']),
+                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form_data['max_pay'])
             )
         )
-    elif form.get('min_pay') and float(form['min_pay']) > 0 and not form.get('max_pay'):
+    elif form_data.get('min_pay') and float(form_data['min_pay']) > 0 and not form_data.get('max_pay'):
         officer_query = officer_query.filter(
-            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form['min_pay'])
+            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form_data['min_pay'])
         )
-    elif form.get('max_pay') and float(form['max_pay']) > 0 and not form.get('min_pay'):
+    elif form_data.get('max_pay') and float(form_data['max_pay']) > 0 and not form_data.get('min_pay'):
         officer_query = officer_query.filter(
-            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
+            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form_data['max_pay'])
         )
 
     if order == 0:  # Last name alphabetical
         officer_query = officer_query.order_by(Officer.last_name, Officer.first_name, Officer.id)
     elif order == 1:  # Rank
+        officer_query = officer_query.outerjoin(Job, Assignment.job)
         officer_query = officer_query.order_by(nullslast(Job.order.desc()))
     elif order == 2:  # Total pay
         officer_query = officer_query.order_by(nullslast(desc(salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay)))

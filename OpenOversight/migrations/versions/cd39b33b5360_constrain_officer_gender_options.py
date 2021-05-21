@@ -1,7 +1,7 @@
 """constrain officer gender options
 
 Revision ID: cd39b33b5360
-Revises: 86eb228e4bc0
+Revises: b4145ba7d4c6
 Create Date: 2020-07-13 02:45:07.533549
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'cd39b33b5360'
-down_revision = '86eb228e4bc0'
+down_revision = 'b4145ba7d4c6'
 branch_labels = None
 depends_on = None
 
