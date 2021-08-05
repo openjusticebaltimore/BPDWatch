@@ -251,8 +251,7 @@ def file_complaint():
             'url': '',
             'op': 'Submit'
         }
-        # resp = requests.post('https://civilrights.baltimorecity.gov/civilian-review-board/file', data=data)
-        resp = requests.post('http://localhost:7823/', data=data)
+        resp = requests.post('https://civilrights.baltimorecity.gov/civilian-review-board/file', data=data)
         if resp.status_code == requests.codes.ok and 'Your complaint has been received by the Civilian Review Board' in resp.text:
             return jsonify(success='Success'), 200
         else:
