@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
-                     SelectField, IntegerField, SubmitField,
+                     SelectField, SubmitField,
                      HiddenField, FormField, FieldList, BooleanField)
 from wtforms.fields.html5 import DateField, EmailField, TelField, IntegerField
 
@@ -418,6 +418,7 @@ class BrowseForm(Form):
     min_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     max_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     submit = SubmitField(label='Submit')
+
 
 class ComplaintForm(Form):
     full_name = StringField('Full name (First, Middle Initial, Last)', validators=[InputRequired()])

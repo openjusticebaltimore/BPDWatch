@@ -2329,14 +2329,14 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(mockdata, 
 def test_complaint_submit_form_success(client):
     with current_app.test_request_context():
         form = ComplaintForm(full_name='Jane Doe',
-                                email_address='dan@example.com',
-                                phone_number='4105555555',
-                                street_address='123 Fake Road',
-                                city='Baltimore',
-                                county='Baltimore City',
-                                zip_code='90210',
-                                complaint='Property is theft.',
-                                referral_url='bpdwatch.com/officer/1')
+                             email_address='dan@example.com',
+                             phone_number='4105555555',
+                             street_address='123 Fake Road',
+                             city='Baltimore',
+                             county='Baltimore City',
+                             zip_code='90210',
+                             complaint='Property is theft.',
+                             referral_url='bpdwatch.com/officer/1')
         with patch('requests.post') as mock_post:
             success_response = Mock()
             success_response.status_code = requests.codes.ok
@@ -2351,17 +2351,18 @@ def test_complaint_submit_form_success(client):
         assert rv.status_code == 200
         assert 'Success' in rv.data.decode('utf-8')
 
+
 def test_complaint_submit_form_error(client):
     with current_app.test_request_context():
         form = ComplaintForm(full_name='Jane Doe',
-                                email_address='dan@example.com',
-                                phone_number='4105555555',
-                                street_address='123 Fake Road',
-                                city='Baltimore',
-                                county='Baltimore City',
-                                zip_code='90210',
-                                complaint='Property is theft.',
-                                referral_url='bpdwatch.com/officer/1')
+                             email_address='dan@example.com',
+                             phone_number='4105555555',
+                             street_address='123 Fake Road',
+                             city='Baltimore',
+                             county='Baltimore City',
+                             zip_code='90210',
+                             complaint='Property is theft.',
+                             referral_url='bpdwatch.com/officer/1')
         with patch('requests.post') as mock_post:
             error_response = Mock()
             error_response.status_code = 500
@@ -2375,6 +2376,7 @@ def test_complaint_submit_form_error(client):
 
         assert rv.status_code == 500
         assert 'Server error encountered' in rv.data.decode('utf-8')
+
 
 def test_complaint_pdf_forms_differ(mockdata, client, session):
     # compare hashes of pdfs for two officers, should differ
