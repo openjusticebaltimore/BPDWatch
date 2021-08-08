@@ -1,0 +1,67 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<div class="modal" tabindex="-1" role="dialog" id="file-complaint">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Filing a Complaint</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Complaints against the Baltimore Police Department can be submitted to the <a target="_blank" href="https://civilrights.baltimorecity.gov/civilian-review-board">Civilian Review Board</a> (CRB). The Civilian Review Board of Baltimore City is an independent agency in the city through which members of the public can issue a complaint against officers of various law enforcement units. Before you file a complaint, be sure to <strong>read about the <a target="_blank" href="https://civilrights.baltimorecity.gov/civilian-review-board/procedure">complaint procedure on the CRB's website</a>.</strong></p>
+                <p>If you have been the victim or witness of an act of abusive language, harassment, false arrest, false imprisonment or excessive force, or injury allegedly resulting from excessive force caused by a police officer, you may file a complaint.</p>
+                <p>To begin the complaint process, fill out the form below which will be sent to the CRB and you will receive a confirmation email. If you wish, you may also <a target="_blank" href="https://www.baltimorepolice.org/submit-misconduct-complaint">submit a complaint directly to the Baltimore Police Department</a>.</p>
+                {{ wtf.quick_form(complaint_form, action=url_for('main.file_complaint')) }}
+                <p class="text-center"><img id="loader" style="display:none" src="{{url_for('static', filename='images/page-loader.gif')}}"></p>
+                <p class="bg-success" style="display:none">Complaint successfully submitted! Check your inbox for a confirmation email from the CRB.</p>
+                <p class="bg-danger" style="display:none">Error submitting complaint — please try again later.</p>
+                <hr>
+                <h4>What happens after I file a complaint?</h4>
+                <p>The CRB will contact you within two (2) business days to instruct you on how to complete the filing process. You will need to provide the CRB with a signed copy of the PDF form below. The form has several questions including your name, age, address, the date of the incident, the name of the accused officer (which we've pre-filled for you), the place of the incident, witnesses to the incident, and a statement of what happened. </p>
+                <p class="text-center"><a class="btn btn-lg btn-primary" href="{{ url_for('main.template_complaint', officer_id=officer.id) }}">Download CRB complaint form</a></p>
+                <p><strong>NOTE:</strong> BPD Watch does not keep copies of complaints submitted through the form above.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('input[name="referral_url"]').val("{{ url_for(request.endpoint, officer_id=officer.id) }}");
+        $('#file-complaint form').submit(function (e) {
+            $('#file-complaint form').hide();
+            $('#file-complaint #loader').show();
+            var url = "{{ url_for('main.file_complaint') }}";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $('#file-complaint form').serialize(), // serializes the form's elements.
+                success: function(data) {
+                    setTimeout(function() {
+                        $('#file-complaint #loader').hide();
+                        $('#file-complaint .bg-success').show();
+                    }, 2000);
+                },
+                error: function(error) {
+                    setTimeout(function() {
+                        $('#file-complaint #loader').hide();
+                        $('#file-complaint .bg-danger').show();
+                    }, 2000);
+                }
+            });
+            e.preventDefault(); // block the traditional submission of the form.
+        });
+
+        // Inject our CSRF token into our AJAX request.
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+                }
+            }
+        })
+    });
+</script>

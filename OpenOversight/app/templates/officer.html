@@ -79,6 +79,8 @@
 {% endblock %}
 {% block content %}
 
+{% include 'partials/complaint_modal.html' %}
+
 <div class="container" role="main">
 
   <div class="page-header">
@@ -153,6 +155,11 @@
               <tr>
                 <td><b>First Employment Date</b></td>
                 <td>{{ officer.employment_date }}</td>
+              </tr>
+              <tr>
+                <td colspan="2"><div class="text-center"><a class="btn btn-lg btn-primary" data-toggle="modal" data-target="#file-complaint">
+                  File a complaint about this officer
+               </a></div></td>
               </tr>
             </tbody>
           </table>

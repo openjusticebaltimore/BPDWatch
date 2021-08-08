@@ -235,3 +235,11 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, bro
     selected_option = select.first_selected_option
     selected_text = selected_option.text
     assert selected_text == 'Not Specified'
+
+
+def test_complaint_popup_displays(mockdata, browser):
+    browser.get("http://localhost:5000/officer/1")
+    modal = browser.find_element(By.ID, 'file-complaint')
+    assert modal.value_of_css_property('display') == 'none'
+    browser.find_element(By.PARTIAL_LINK_TEXT, "FILE A COMPLAINT ABOUT THIS OFFICER").click()
+    assert modal.value_of_css_property('display') == 'block'

@@ -8,9 +8,12 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 import sys
 from traceback import format_exc
+import pdfrw
+from tempfile import mkstemp
+import requests
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Response)
+                   flash, current_app, jsonify, Response, send_file)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -28,7 +31,7 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
                     AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm,
-                    OfficerLinkForm)
+                    OfficerLinkForm, ComplaintForm)
 from .model_view import ModelView
 from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
@@ -169,6 +172,7 @@ def profile(username):
 @main.route('/officer/<int:officer_id>', methods=['GET', 'POST'])
 def officer_profile(officer_id):
     form = AssignmentForm()
+    complaint_form = ComplaintForm()
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
@@ -204,7 +208,55 @@ def officer_profile(officer_id):
             officer.image_width = faces[0].face_width
             officer.image_height = faces[0].face_height
     return render_template('officer.html', officer=officer, paths=face_paths,
-                           faces=faces, assignments=assignments, form=form)
+                           faces=faces, assignments=assignments, form=form, complaint_form=complaint_form)
+
+
+@main.route('/officer/<int:officer_id>/complaint_form', methods=['GET'])
+def template_complaint(officer_id):
+    officer = Officer.query.filter_by(id=officer_id).one()
+    template = pdfrw.PdfReader(os.path.dirname(os.path.abspath(__file__)) + '/../static/CRBform.pdf')
+    template.Root.Pages.Kids[0].Annots[27].update(pdfrw.PdfDict(V=officer.full_name()))
+    template.Root.Pages.Kids[0].Annots[29].update(pdfrw.PdfDict(V=officer.unique_internal_identifier))
+    officer_url = url_for('main.officer_profile', officer_id=officer.id)
+    template.Root.Pages.Kids[0].Annots[30].update(pdfrw.PdfDict(V='Race: {}, Gender: {}, BPD Watch profile: https://bpdwatch.com{}'.format(officer.race_label(), officer.gender_label(), officer_url)))
+    template.Root.AcroForm.update(pdfrw.PdfDict(NeedAppearances=pdfrw.PdfObject('true')))
+    tmp, filepath = mkstemp()
+    pdfrw.PdfWriter().write(filepath, template)
+    return send_file(
+        filepath,
+        attachment_filename='CRBform.pdf'
+    )
+
+
+@main.route('/file_complaint', methods=['POST'])
+def file_complaint():
+    form = ComplaintForm()
+    if form.validate_on_submit():
+        data = {
+            'submitted[complainant][full_name]': form.full_name.data,
+            'submitted[complainant][email_address]': form.email_address.data,
+            'submitted[complainant][primary_phone_number]': form.phone_number.data,
+            'submitted[complainant][other_phone_number]': '',
+            'submitted[complainant][street_address]': form.street_address.data,
+            'submitted[complainant][city]': form.city.data,
+            'submitted[complainant][county]': form.county.data,
+            'submitted[complainant][zip_code]': form.zip_code.data,
+            'submitted[complaint][description]': form.complaint.data,
+            'submitted[referral_information][referral]': 'bpdwatch.com{}'.format(form.referral_url.data),
+            'details[sid]': '',
+            'details[page_num]': 1,
+            'details[page_count]': 1,
+            'details[finished]': 0,
+            'form_id': 'webform_client_form_3305',
+            'url': '',
+            'op': 'Submit'
+        }
+        resp = requests.post('https://civilrights.baltimorecity.gov/civilian-review-board/file', data=data)
+        if resp.status_code == requests.codes.ok and 'Your complaint has been received by the Civilian Review Board' in resp.text:
+            return jsonify(success='Success'), 200
+        else:
+            return jsonify(error="Server error encountered. Try again later."), 500
+    return jsonify(data=form.errors)
 
 
 @sitemap.register_generator
