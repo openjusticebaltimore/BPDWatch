@@ -81,5 +81,24 @@ help: ## Print this message and exit
 		| sort \
 		| column -s ':' -t
 
+.PHONY: attach
 attach:
 	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
+
+.PHONY: backup
+backup:
+	ssh bpdwatch.com "bpdwatch.com/backup.sh"
+	scp bpdwatch.com:/srv/bpdwatch/bpdwatch.com.sql.gz backup/
+	gunzip -f backup/bpdwatch.com.sql.gz
+
+.PHONY: import
+import:
+	docker exec -it bpdwatch-development-postgres psql -U bpdwatch -d bpdwatch -f /backups/bpdwatch.com.sql
+
+.PHONY: sync
+sync: backup import
+
+.PHONE: sync_staging
+sync_staging: backup
+	ssh bpdwatch.com "gunzip -k -f /srv/bpdwatch/bpdwatch.com.sql.gz"
+	ssh bpdwatch.com "docker exec bpdwatch-staging-postgres psql -U bpdwatch -d bpdwatch -f /backups/bpdwatch.com.sql"
