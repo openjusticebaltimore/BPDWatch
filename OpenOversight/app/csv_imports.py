@@ -42,6 +42,7 @@ def _create_or_update_model(
     if not row["id"]:
         return create_method(row)
     else:
+        print(row['id'])
         if not force_create:
             return update_method(row, existing_model_lookup[int(row["id"])])
         else:
@@ -412,12 +413,23 @@ def import_csv_files(
         )
 
     all_officers = {str(k): v for k, v in id_to_officer.items()}
-    all_officers.update(new_officers)
+    if officers_csv is not None:
+        all_officers.update(new_officers)
 
     if assignments_csv is not None:
-        _handle_assignments_csv(
-            assignments_csv, department_id, all_officers, force_create
-        )
+        csvs = [
+            'assignments1.csv',
+            'assignments2.csv',
+            'assignments3.csv',
+            'assignments4.csv',
+            'assignments5.csv',
+            'assignments6.csv',
+            'assignments7.csv',
+        ]
+        for assignment_csv in csvs:
+            _handle_assignments_csv(
+                assignment_csv, department_id, all_officers, force_create
+            )
 
     if salaries_csv is not None:
         _handle_salaries(salaries_csv, department_id, all_officers, force_create)
