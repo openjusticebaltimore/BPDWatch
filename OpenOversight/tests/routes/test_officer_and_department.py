@@ -5,12 +5,13 @@ import copy
 import json
 import pytest
 import random
+import requests
 from datetime import datetime, date
 from io import BytesIO
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 from flask import url_for, current_app
 from ..conftest import AC_DEPT, RANK_CHOICES_1
-from OpenOversight.app.utils import add_new_assignment, dept_choices, unit_choices
+from OpenOversight.app.utils import add_new_assignment, dept_choices, unit_choices, compute_hash
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
@@ -19,7 +20,7 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           EditOfficerForm, LinkForm,
                                           EditDepartmentForm, SalaryForm,
                                           LocationForm, BrowseForm, LicensePlateForm,
-                                          IncidentForm, OfficerLinkForm)
+                                          IncidentForm, OfficerLinkForm, ComplaintForm)
 
 from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job, User
 
@@ -2323,3 +2324,78 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(mockdata, 
         )
 
         assert rv.status_code == 403
+
+
+def test_complaint_submit_form_success(client):
+    with current_app.test_request_context():
+        form = ComplaintForm(full_name='Jane Doe',
+                             email_address='dan@example.com',
+                             phone_number='4105555555',
+                             street_address='123 Fake Road',
+                             city='Baltimore',
+                             county='Baltimore City',
+                             zip_code='90210',
+                             complaint='Property is theft.',
+                             referral_url='bpdwatch.com/officer/1')
+        with patch('requests.post') as mock_post:
+            success_response = Mock()
+            success_response.status_code = requests.codes.ok
+            success_response.text = 'Your complaint has been received by the Civilian Review Board'
+            mock_post.return_value = success_response
+            rv = client.post(
+                url_for('main.file_complaint'),
+                data=form.data,
+                follow_redirects=False
+            )
+
+        assert rv.status_code == 200
+        assert 'Success' in rv.data.decode('utf-8')
+
+
+def test_complaint_submit_form_error(client):
+    with current_app.test_request_context():
+        form = ComplaintForm(full_name='Jane Doe',
+                             email_address='dan@example.com',
+                             phone_number='4105555555',
+                             street_address='123 Fake Road',
+                             city='Baltimore',
+                             county='Baltimore City',
+                             zip_code='90210',
+                             complaint='Property is theft.',
+                             referral_url='bpdwatch.com/officer/1')
+        with patch('requests.post') as mock_post:
+            error_response = Mock()
+            error_response.status_code = 500
+            error_response.text = 'Error'
+            mock_post.return_value = error_response
+            rv = client.post(
+                url_for('main.file_complaint'),
+                data=form.data,
+                follow_redirects=False
+            )
+
+        assert rv.status_code == 500
+        assert 'Server error encountered' in rv.data.decode('utf-8')
+
+
+def test_complaint_pdf_forms_differ(mockdata, client, session):
+    # compare hashes of pdfs for two officers, should differ
+    officers = Officer.query.limit(2).all()
+    with current_app.test_request_context():
+        rv1 = client.get(
+            url_for('main.template_complaint', officer_id=officers[0].id),
+            follow_redirects=False
+        )
+        rv2 = client.get(
+            url_for('main.template_complaint', officer_id=officers[1].id),
+            follow_redirects=False
+        )
+        rv3 = client.get(
+            url_for('main.template_complaint', officer_id=officers[0].id),
+            follow_redirects=False
+        )
+        hash1 = compute_hash(rv1.data)
+        hash2 = compute_hash(rv2.data)
+        hash3 = compute_hash(rv3.data)
+        assert hash1 != hash2
+        assert hash1 == hash3

@@ -732,3 +732,13 @@ h1, h2, h3 {
     display: block;
     margin: 4em 0;
 }
+
+h4.modal-title {
+    display: inline-block;
+}
+
+p.bg-success,
+p.bg-danger {
+    padding: 10px;
+    border-radius: 7px;
+}

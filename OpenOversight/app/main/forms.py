@@ -1,12 +1,12 @@
 from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
-                     SelectField, IntegerField, SubmitField,
+                     SelectField, SubmitField,
                      HiddenField, FormField, FieldList, BooleanField)
-from wtforms.fields.html5 import DateField
+from wtforms.fields.html5 import DateField, EmailField, TelField, IntegerField
 
 from wtforms.validators import (DataRequired, InputRequired, AnyOf, NumberRange, Regexp,
-                                Length, Optional, URL, ValidationError)
+                                Length, Optional, URL, ValidationError, Email)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
@@ -14,6 +14,7 @@ from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
+from ..auth.recaptcha3 import Recaptcha3Field
 import datetime
 import re
 
@@ -417,3 +418,17 @@ class BrowseForm(Form):
     min_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     max_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     submit = SubmitField(label='Submit')
+
+
+class ComplaintForm(Form):
+    full_name = StringField('Full name (First, Middle Initial, Last)', validators=[InputRequired()])
+    email_address = EmailField('Email Address', validators=[InputRequired(), Email()])
+    phone_number = TelField('Primary Phone Number', validators=[InputRequired()])
+    street_address = StringField('Street Address', validators=[InputRequired()])
+    city = StringField('City', default='Baltimore', validators=[InputRequired()])
+    county = StringField('County', default='Baltimore City', validators=[InputRequired()])
+    zip_code = StringField('Zip Code', validators=[InputRequired(), Length(min=5, max=5)])
+    complaint = TextAreaField('Brief Description of Event (1-2 sentences)', validators=[InputRequired()])
+    referral_url = HiddenField()
+    recaptcha = Recaptcha3Field(action='complaint', execute_on_load=True)
+    submit = SubmitField('Submit')
