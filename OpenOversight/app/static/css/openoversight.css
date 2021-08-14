@@ -727,3 +727,8 @@ h1, h2, h3 {
 .pager .next.last>a {
     margin-left: 7px;
 }
+
+.btn-group.department {
+    display: block;
+    margin: 4em 0;
+}
