@@ -23,6 +23,10 @@
         <span class="small">
           Available data range: 5/3/2018 - 8/21/2020. <a href="https://github.com/openjusticebaltimore/BPDWatch-data">See the raw datasets here.</a>
         </span>
+        {% elif department.short_name == 'BCoPD' %}
+        <span class="small">
+          Available data from 8/11/2021. <a href="https://github.com/openjusticebaltimore/BPDWatch-data">See the raw datasets here.</a>
+        </span>
         {% endif %}
         <p>
           <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
