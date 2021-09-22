@@ -171,6 +171,7 @@ def profile(username):
 
 @main.route('/officer/<int:officer_id>', methods=['GET', 'POST'])
 def officer_profile(officer_id):
+    jsloads = ['js/court_cases.js']
     form = AssignmentForm()
     complaint_form = ComplaintForm()
     try:
@@ -208,7 +209,7 @@ def officer_profile(officer_id):
             officer.image_width = faces[0].face_width
             officer.image_height = faces[0].face_height
     return render_template('officer.html', officer=officer, paths=face_paths,
-                           faces=faces, assignments=assignments, form=form, complaint_form=complaint_form)
+                           faces=faces, assignments=assignments, form=form, complaint_form=complaint_form, jsloads=jsloads)
 
 
 @main.route('/officer/<int:officer_id>/complaint_form', methods=['GET'])

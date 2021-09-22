@@ -742,3 +742,7 @@ p.bg-danger {
     padding: 10px;
     border-radius: 7px;
 }
+
+#court-cases {
+    height: 500px;
+}

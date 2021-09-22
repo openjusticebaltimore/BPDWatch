@@ -77,6 +77,11 @@
   }
   </script>
 {% endblock %}
+{% block head %}
+<script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.noStyle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+{% endblock %}
 {% block content %}
 
 {% if officer.department.short_name == 'BPD' %}
@@ -463,6 +468,10 @@
       <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
     </div>{# end col #}
     {% endif %}
+    <div class='col-sm-12 col-md-12'>
+      <h3>Court Cases <a target="_blank" href="https://mdcaseexplorer.com/bpd/{{ officer.unique_internal_identifier }}"><span class="fa fa-external-link"></span></a></h3>
+      <div id='court-cases' class="ag-theme-alpine" data-seq-no='{{ officer.unique_internal_identifier }}'></div>
+    </div>
   </div> {# end row #}
   {% with obj=officer %}
     {% include "partials/links_and_videos_row.html" %}

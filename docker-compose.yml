@@ -1,45 +1,58 @@
-version: "3"
+version: "3.8"
 
 volumes:
   postgres:
     driver: local
 
 services:
- postgres:
-   restart: always
-   image: postgres:latest
-   environment:
-     POSTGRES_USER: openoversight
-     POSTGRES_PASSWORD: terriblepassword
-     POSTGRES_DB: openoversight-dev
-   volumes:
-     - postgres:/var/lib/postgresql/data
-   ports:
-     - "5432:5432"
+  postgres:
+    restart: unless-stopped
+    image: postgres:12
+    container_name: bpdwatch-development-postgres
+    environment:
+      POSTGRES_USER: bpdwatch
+      POSTGRES_PASSWORD: a3gvTnB1uP7GY0ku
+      POSTGRES_DB: bpdwatch
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./backup:/backups
+    ports:
+      - "5432:5432"
 
- web:
-   restart: always
-   build:
-      context: .
-      args:
-      - DOCKER_BUILD_ENV
-      - TRAVIS_PYTHON_VERSION
-      dockerfile: ./dockerfiles/web/Dockerfile
-   environment:
-     AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-     AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-     AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-     S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
-     APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
-     FLASK_APP: app
-     FLASK_ENV: "${FLASK_ENV:-development}"
-   volumes:
-     - ./OpenOversight/:/usr/src/app/OpenOversight/:z
-   user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
-   links:
-     - postgres:postgres
-   expose:
-     - "3000"
-   command: scripts/entrypoint.sh
-   ports:
-     - "3000:3000"
+  web:
+    restart: unless-stopped
+    container_name: bpdwatch-development-web
+    build:
+        context: .
+        args:
+        - DOCKER_BUILD_ENV
+        dockerfile: ./dockerfiles/web/Dockerfile
+    environment:
+      AWS_ACCESS_KEY_ID: AKIATLCEHZFK4FPFSG7N
+      AWS_SECRET_ACCESS_KEY: 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
+      AWS_DEFAULT_REGION: us-east-1
+      S3_BUCKET_NAME: bpdwatch-dev
+      APPROVE_REGISTRATIONS: ""
+      DISABLE_REGISTRATION: ""
+      FLASK_APP: app
+      FLASK_ENV: development
+      SQLALCHEMY_DATABASE_URI: postgresql://bpdwatch:a3gvTnB1uP7GY0ku@postgres/bpdwatch
+      SECRET_KEY: gs0MXtzuOrF5vHC8
+      RECAPTCHA_V3_SITE_KEY: 6Lehdq4ZAAAAAIu8QieaeoGC878vB4OVyzsJm6jU
+      RECAPTCHA_V3_SECRET_KEY: 6Lehdq4ZAAAAANaR2ww6Txd6V3j1LfENId0SGaT2
+      RECAPTCHA_V3_THRESHOLD: "0.5"
+      MAIL_SERVER: mail.mayfirst.org
+      MAIL_USERNAME: openjustice_info
+      MAIL_PASSWORD: 9rw36V9394Ez
+      OO_MAIL_SUBJECT_PREFIX: "[BPD Watch]"
+      OO_MAIL_SENDER: "BPD Watch <info@bpdwatch.com>"
+    volumes:
+      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+    user: "1000"
+    links:
+      - postgres:postgres
+    expose:
+      - "3000"
+    command: scripts/entrypoint.sh
+    ports:
+      - "3000:3000"
