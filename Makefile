@@ -98,7 +98,7 @@ import:
 .PHONY: sync
 sync: backup import
 
-.PHONE: sync_staging
+.PHONY: sync_staging
 sync_staging: backup
 	ssh bpdwatch.com "gunzip -k -f /srv/bpdwatch/bpdwatch.com.sql.gz"
 	ssh bpdwatch.com "docker exec bpdwatch-staging-postgres psql -U bpdwatch -d bpdwatch -f /backups/bpdwatch.com.sql"
