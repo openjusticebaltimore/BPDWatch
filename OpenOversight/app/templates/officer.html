@@ -80,7 +80,7 @@
 {% block head %}
 <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.noStyle.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
-<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-balham.css">
 {% endblock %}
 {% block content %}
 
@@ -470,7 +470,11 @@
     {% endif %}
     <div class='col-sm-12 col-md-12'>
       <h3>Court Cases <a target="_blank" href="https://mdcaseexplorer.com/bpd/{{ officer.unique_internal_identifier }}"><span class="fa fa-external-link"></span></a></h3>
-      <div id='court-cases' class="ag-theme-alpine" data-seq-no='{{ officer.unique_internal_identifier }}'></div>
+      <div id='court-cases' class="ag-theme-balham" data-seq-no='{{ officer.unique_internal_identifier }}'>
+        <div class="loader-container">
+          <div class="loader"></div>
+        </div>
+      </div>
     </div>
   </div> {# end row #}
   {% with obj=officer %}

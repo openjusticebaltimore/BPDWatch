@@ -744,5 +744,43 @@ p.bg-danger {
 }
 
 #court-cases {
-    height: 500px;
+    height: 800px;
+}
+
+#court-cases .loader-container {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+#court-cases .loader {
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #555;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+    margin: 0;
+    position: absolute;
+    top: calc(50% - 120px);
+    left: calc(50% - 120px);
+    margin: 0;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.ag-root-wrapper.ag-layout-normal {
+    height: 96%;
+}
+
+.case-details {
+    margin-left: 30px;
+    padding-bottom: 40px;
+}
+
+.ag-theme-balham .ag-full-width-container > .ag-row {
+    background-color: #ecf0f1;
 }
