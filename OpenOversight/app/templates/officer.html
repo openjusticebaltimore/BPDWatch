@@ -140,7 +140,7 @@
                 <td>{{ officer.id }}</td>
               </tr>
               <tr>
-                <td><b>Sequence Number</b></td>
+                <td><b>{{ officer.department.unique_internal_identifier_label }}</b></td>
                 <td>{{ officer.unique_internal_identifier }}</td>
               </tr>
               <tr>
@@ -468,6 +468,7 @@
       <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
     </div>{# end col #}
     {% endif %}
+    {% if officer.department_id == 1 %}
     <div class='col-sm-12 col-md-12'>
       <h3>Court Cases <a target="_blank" href="https://mdcaseexplorer.com/bpd/{{ officer.unique_internal_identifier }}"><span class="fa fa-external-link"></span></a></h3>
       <div id='court-cases' class="ag-theme-balham" data-seq-no='{{ officer.unique_internal_identifier }}'>
@@ -476,6 +477,7 @@
         </div>
       </div>
     </div>
+    {% endif %}
   </div> {# end row #}
   {% with obj=officer %}
     {% include "partials/links_and_videos_row.html" %}

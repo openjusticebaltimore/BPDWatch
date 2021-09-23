@@ -38,7 +38,6 @@ $(document).ready(function() {
         }).done(function(ranks) {
             $('input#rank').replaceWith('<select class="form-control" id="rank" name="rank">');
             for (i = 0; i < ranks.length; i++) {
-                console.log(ranks[i]);
                 $('select#rank').append(
                     $('<option></option>').attr("value", ranks[i][1]).text(ranks[i][1])
                 );
@@ -49,11 +48,12 @@ $(document).ready(function() {
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');
         const depts_with_uii = $('#current-uii').data('departments');
         let targetDept = depts_with_uii.find(function(element) {
-            return element.id == $deptSelectionId
+            return element.id == dept_id;
         });
         let targetDeptUii = targetDept.unique_internal_identifier_label
         if (targetDeptUii) {
             $('#current-uii').text(targetDeptUii);
+            $('#step-uii').text(targetDeptUii);
         } else {
             $('#uii-question').hide();    
         }
