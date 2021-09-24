@@ -19,7 +19,11 @@ const setupGrid = (metadata) => {
                 values: ['CR', 'Traffic']
             }
         },
-        { field: 'filing_date', headerName: 'Filing Date' },
+        {
+            field: 'filing_date',
+            headerName: 'Filing Date',
+            sortingOrder: ['desc', 'asc', null]
+        },
         {
             field: 'status',
             headerName: 'Status',
@@ -42,6 +46,15 @@ const setupGrid = (metadata) => {
             sortable: true,
             filter: 'agTextColumnFilter',
         },
+        statusBar: {
+            statusPanels: [
+              {
+                statusPanel: 'customStatusBar',
+                key: 'customStatusBarKey',
+                align: 'center',
+              }
+            ]
+        },
         masterDetail: true,
         detailRowAutoHeight: true,
         detailCellRenderer: "detailCellRenderer",
@@ -49,13 +62,27 @@ const setupGrid = (metadata) => {
             metadata: metadata
         },
         components: {
-            detailCellRenderer: DetailCellRenderer
+            detailCellRenderer: DetailCellRenderer,
+            customStatusBar: StatusBar,
         },
+        onGridReady: onGridReady
     };
 
     const eGridDiv = document.querySelector('#court-cases');
     eGridDiv.innerHTML = '';
     new agGrid.Grid(eGridDiv, gridOptions);
+};
+
+const onGridReady = event => {
+    const columnState = {
+        state: [
+             {
+                colId: 'filing_date',
+                sort: 'desc'
+            }
+        ]
+    }
+    event.columnApi.applyColumnState(columnState);
 };
 
 const datasource = {
@@ -69,6 +96,8 @@ const datasource = {
         .then(response => {
             params.successCallback(response.rows, response.lastRow);
             resizeCols(params.columnApi);
+            const statusBarComponent = params.api.getStatusPanel('customStatusBarKey');
+            statusBarComponent.updateTotal(params);
         })
         .catch(error => {
             console.error(error);
@@ -86,9 +115,61 @@ const resizeCols = (columnApi) => {
     columnApi.autoSizeColumns(allColumnIds);
 };
 
+class StatusBar {
+    init(params) {
+        this.params = params;
+        this.fetching = false;
+        this.eGui = document.createElement('div');
+        this.eGui.innerHTML = `
+            <div class="ag-status-bar-center">
+                <div class="ag-status-name-value ag-status-panel ag-status-panel-total-row-count">
+                    Total Rows:&nbsp;
+                    <span id="total-row-count" class="ag-status-name-value-value">
+                        <span class="ag-loading-icon" ref="eLoadingIcon">
+                            <span
+                                class="ag-icon ag-icon-loading"
+                                unselectable="on"
+                                role="presentation"
+                            ></span>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        `;
+        fetch(`https://api.mdcaseexplorer.com/api/bpd/seq/${seq_no}/total`)
+            .then(response => {
+                if (typeof response.json === 'function') return response.json();
+                else return response;
+            })
+            .then(response => {
+                $('#total-row-count').text(numberWithCommas(response))
+            });
+    }
+
+    getGui() {
+        return this.eGui;
+    }
+
+    refresh(params) { return true; }
+
+    updateTotal(params) {
+        fetch(`https://api.mdcaseexplorer.com/api/bpd/seq/${seq_no}/total`, {
+            method: 'post',
+            body: JSON.stringify(params.request),
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+        })
+        .then(response => {
+            if (typeof response.json === 'function') return response.json();
+            else return response;
+        })
+        .then(response => {
+            $('#total-row-count').text(numberWithCommas(response))
+        });
+    }
+}
+
 class DetailCellRenderer {
     init(params) {
-        console.log(params);
         this.params = params;
         this.eGui = document.createElement('div');
         this.eGui.id = 'detail-grid';
@@ -114,8 +195,8 @@ class DetailCellRenderer {
             case_number = params.data.case_number,
             path = `https://api.mdcaseexplorer.com/api/${detail_loc}/${case_number}/full`;
         fetch(path)
-        .then(httpResponse => httpResponse.json())
-        .then(response => this.render(response));
+            .then(httpResponse => httpResponse.json())
+            .then(response => this.render(response));
     }
 
     getGui() {
@@ -199,7 +280,7 @@ class DetailCellRenderer {
             };
             detailGridColumns.push(detailGridColumn);
         }
-        const ret = {
+        return {
             columnDefs: detailGridColumns,
             defaultColDef: {
                 resizable: true
@@ -207,8 +288,6 @@ class DetailCellRenderer {
             rowData: rowData,
             onGridReady: this.setupDetailGrid(id)
         };
-        console.log(ret);
-        return ret;
     }
 
     setupDetailGrid(detailGridId) {
@@ -297,4 +376,8 @@ const toTitleCase = str => {
         .replace(/ Id$/, ' ID')
         .replace('Cjis', 'CJIS')
         .replace('Dob', 'DOB');
+};
+
+const numberWithCommas = x => {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };

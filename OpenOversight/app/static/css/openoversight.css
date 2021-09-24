@@ -784,3 +784,12 @@ p.bg-danger {
 .ag-theme-balham .ag-full-width-container > .ag-row {
     background-color: #ecf0f1;
 }
+
+.ag-theme-balham .ag-status-bar {
+    font-weight: normal;
+    color: #000;
+}
+  
+.ag-theme-balham .ag-status-bar .ag-status-name-value-value {
+    font-weight: 600;
+}
