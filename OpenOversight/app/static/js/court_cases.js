@@ -1,6 +1,6 @@
 const seq_no = $('#court-cases').data('seq-no');
 
-fetch('https://api.mdcaseexplorer.com/api/metadata')
+fetch('https://api.mdcaseexplorer.com/api/v1/metadata')
     .then(httpResponse => httpResponse.json())
     .then(response => setupGrid(response));
 
@@ -87,9 +87,9 @@ const onGridReady = event => {
 
 const datasource = {
     getRows(params) {
-        fetch(`https://api.mdcaseexplorer.com/api/bpd/seq/${seq_no}`, {
+        fetch(`https://api.mdcaseexplorer.com/api/v1/bpd/seq/${seq_no}`, {
             method: 'post',
-            body: JSON.stringify(JSON.stringify(params.request)),
+            body: JSON.stringify(params.request),
             headers: { 'Content-Type': 'application/json; charset=utf-8' }
         })
         .then(httpResponse => httpResponse.json())
@@ -136,7 +136,7 @@ class StatusBar {
                 </div>
             </div>
         `;
-        fetch(`https://api.mdcaseexplorer.com/api/bpd/seq/${seq_no}/total`)
+        fetch(`https://api.mdcaseexplorer.com/api/v1/bpd/seq/${seq_no}/total`)
             .then(response => {
                 if (typeof response.json === 'function') return response.json();
                 else return response;
@@ -153,7 +153,7 @@ class StatusBar {
     refresh(params) { return true; }
 
     updateTotal(params) {
-        fetch(`https://api.mdcaseexplorer.com/api/bpd/seq/${seq_no}/total`, {
+        fetch(`https://api.mdcaseexplorer.com/api/v1/bpd/seq/${seq_no}/total`, {
             method: 'post',
             body: JSON.stringify(params.request),
             headers: { 'Content-Type': 'application/json; charset=utf-8' }
@@ -193,7 +193,7 @@ class DetailCellRenderer {
         `;
         const detail_loc = params.data.detail_loc.toLowerCase(),
             case_number = params.data.case_number,
-            path = `https://api.mdcaseexplorer.com/api/${detail_loc}/${case_number}/full`;
+            path = `https://api.mdcaseexplorer.com/api/v1/${detail_loc}/${case_number}/full`;
         fetch(path)
             .then(httpResponse => httpResponse.json())
             .then(response => this.render(response));
