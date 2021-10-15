@@ -150,7 +150,7 @@ class EditDepartmentForm(DepartmentForm):
 
 class LinkForm(Form):
     title = StringField(
-        validators=[Length(max=100, message='Titles are limited to 100 characters.')],
+        validators=[Length(max=200, message='Titles are limited to 200 characters.')],
         description='Text that will be displayed as the link.')
     description = TextAreaField(
         validators=[Length(max=600, message='Descriptions are limited to 600 characters.')],
