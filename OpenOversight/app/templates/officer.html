@@ -468,6 +468,9 @@
       <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
     </div>{# end col #}
     {% endif %}
+    {% with obj=officer %}
+      {% include "partials/links_and_videos_row.html" %}
+    {% endwith %}
     {% if officer.department_id == 1 %}
     <div class='col-sm-12 col-md-12'>
       <h3>Court Cases <a target="_blank" href="https://mdcaseexplorer.com/bpd/{{ officer.unique_internal_identifier }}"><span class="fa fa-external-link"></span></a></h3>
@@ -479,8 +482,5 @@
     </div>
     {% endif %}
   </div> {# end row #}
-  {% with obj=officer %}
-    {% include "partials/links_and_videos_row.html" %}
-  {% endwith %}
 </div> {# end container #}
 {% endblock %}
