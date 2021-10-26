@@ -332,6 +332,16 @@ def filter_by_form(form_data, officer_query, department_id=None, order=0):
             officer_query = officer_query.filter(
                 Officer.id.in_(face_officer_ids)
             )
+    
+    if form_data.get('do_not_call') and all(dnc in ['0', '1'] for dnc in form_data['do_not_call']):
+        if '0' in form_data['do_not_call'] and '1' not in form_data['do_not_call']:
+            officer_query = officer_query.filter(
+                Officer.do_not_call.is_(False)
+            )
+        elif '1' in form_data['do_not_call'] and '0' not in form_data['do_not_call']:
+            officer_query = officer_query.filter(
+                Officer.do_not_call.is_(True)
+            )
 
     # Some SQL acrobatics to left join only the most recent assignment and salary per officer
     assignment_row_num_col = func.row_number().over(

@@ -164,6 +164,18 @@
                 <td>{{ officer.employment_date }}</td>
               </tr>
               {% if officer.department.short_name == 'BPD' %}
+              {% if officer.do_not_call == True %}
+              <tr>
+                <td colspan="2">
+                  <span class="label label-danger do-not-call-label"><b>Questionable Integrity</b></span>
+                  <span class="do-not-call">
+                    <a role="button" tabindex="0" data-toggle="popover" trigger="focus">
+                      <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                    </a>
+                  </span>
+                </td>
+              </tr>
+              {% endif %}
               <tr>
                 <td colspan="2"><div class="text-center"><a class="btn btn-lg btn-primary" data-toggle="modal" data-target="#file-complaint">
                   File a complaint about this officer
@@ -483,4 +495,16 @@
     {% endif %}
   </div> {# end row #}
 </div> {# end container #}
+<script>
+  const content = '<a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-md-ci-cr-do-not-call-list-compel-20200211-xsjzrh2we5df7etqreyxgu2e4y-story.html">Click here</a> ' +
+    'to read more about the Baltimore State&#39;s Attorney&#39;s Office&#39;s "Do Not Call" list of officers with possible integrity issues.';
+  $(function () {
+    $('[data-toggle="popover"]').popover({
+      html: true,
+      trigger: 'focus',
+      content: content,
+      title: 'Do Not Call list'
+    });
+  });
+</script>
 {% endblock %}

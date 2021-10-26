@@ -415,6 +415,7 @@ class BrowseForm(Form):
     max_age = SelectField('maximum age', default=100, choices=AGE_CHOICES,
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
     photo = SelectField('photo', validators=[Optional(), AnyOf(['0', '1'])])
+    do_not_call = SelectField('Do Not Call', validators=[Optional(), AnyOf(['0', '1'])])
     min_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     max_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     submit = SubmitField(label='Submit')

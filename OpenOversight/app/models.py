@@ -108,6 +108,7 @@ class Officer(BaseModel):
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
     unique_internal_identifier = db.Column(db.String(50), index=True, unique=True, nullable=True)
+    do_not_call = db.Column(db.Boolean, nullable=False, default=False, server_default='false')
 
     links = db.relationship(
         'Link',

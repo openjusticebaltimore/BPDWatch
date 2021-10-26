@@ -122,6 +122,30 @@
             </div>
           </div>
         </div>
+        {% if department.short_name == 'BPD' %}
+        <div class="panel">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-do-not-call">
+            <h3 class="panel-title accordion-toggle">Do Not Call List</h3>
+          </div>
+          <div class="collapse in" id="filter-do-not-call">
+            <div class="panel-body">
+              <div class="form-group checkbox">
+                <label class="form-check more-info">
+                  <input type="checkbox" class="form-check-input" id="do_not_call" name="do_not_call" value="1" {% if '1' in form_data['do_not_call'] %}checked="checked" {% endif %}/>Questionable Integrity
+                </label>
+                <span class="do-not-call">
+                  <a role="button" tabindex="0" data-toggle="popover" data-placement="bottom" trigger="focus">
+                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                  </a>
+                </span>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" id="not_do_not_call" name="do_not_call" value="0" {% if '0' in form_data['do_not_call'] %}checked="checked" {% endif %}/>Not listed
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
         <div class="panel">
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-pay">
             <h3 class="panel-title accordion-toggle">Total pay</h3>
@@ -237,6 +261,16 @@
                     <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{{ officer.full_name() }}</a>
                   </h2>
                   <div class="row">
+                    {% if officer.department_id == 1 and officer.do_not_call == true %}
+                    <div class="col-md-12 col-xs-12">
+                      <p class="do-not-call">
+                        <span class="label label-danger">QUESTIONABLE INTEGRITY</span>
+                        <a role="button" tabindex="0" data-toggle="popover" trigger="focus" onclick="return false;">
+                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                        </a>
+                      </p>
+                    </div>
+                    {% endif %}
                     <div class="col-md-6 col-xs-6">
                       <dl>
                         <dt>BPD Watch ID</dt>
@@ -263,6 +297,18 @@
           </li>
         {% endfor %}
       </ul>
+      <script>
+        const content = '<a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-md-ci-cr-do-not-call-list-compel-20200211-xsjzrh2we5df7etqreyxgu2e4y-story.html">Click here</a> ' +
+          'to read more about the Baltimore State&#39;s Attorney&#39;s Office&#39;s "Do Not Call" list of officers with possible integrity issues.';
+        $(function () {
+          $('[data-toggle="popover"]').popover({
+            html: true,
+            trigger: 'focus',
+            content: content,
+            title: 'Do Not Call list'
+          });
+        });
+      </script>
       {% with paginate=officers, location='bottom' %}
         {% include "partials/paginate_nav.html" %}
       {% endwith %}

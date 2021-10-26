@@ -793,3 +793,29 @@ p.bg-danger {
 .ag-theme-balham .ag-status-bar .ag-status-name-value-value {
     font-weight: 600;
 }
+
+.do-not-call {
+    margin: 0 0 10px;
+}
+
+.do-not-call .glyphicon {
+    font-size: 14px;
+    color: grey;
+}
+
+.search-results .do-not-call .glyphicon {
+    position: relative;
+    top: 4px;
+}
+
+.do-not-call a:focus {
+    outline: none;
+}
+
+#filter-do-not-call label.more-info {
+    display: inline-block;
+}
+
+.do-not-call-label {
+    font-size: 100%;
+}

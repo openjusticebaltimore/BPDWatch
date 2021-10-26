@@ -38,6 +38,16 @@
           </a>
           {% endif %}
         </p>
+        {% if department.short_name == 'BPD' %}
+        <h3>Baltimore State's Attorney's Office's 
+          <a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-prem-md-ci-cr-mosbu-do-not-call-list-20211015-5etmde7etfaxdj6ovrk3qcb7gy-story.html">Do Not Call list</a></h3>
+        <span class="small">The Baltimore State's Attorney's Office compiled a list of over 300 officers with questionable integrity.</span>
+        <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id, do_not_call=[1]) }}">
+            See the list
+         </a>
+        </p>
+        {% endif %}
       </div>
   {% endfor %}
   </div>
