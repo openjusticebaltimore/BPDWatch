@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from OpenOversight.app import create_app, models  # noqa E402
 from OpenOversight.app.models import db  # noqa E402
 
-CSV_FILENAME = 'rosters/HRIS_Employee_Demographics_Report_MPIA_20_0954_reviewed.csv'
+CSV_FILENAME = 'rosters/HRIS Employee Demographics 12.3.20 reviewed.csv'
 DEPARTMENT_ID = 1
 
 app = create_app('development')
@@ -21,22 +21,30 @@ jobs = []
 code_to_job = {}
 seq_no_re = re.compile(r"^[A-Z][\dA-Z]\d\d$")
 
-bad_seq_nos = [
-    'M857',
-    'T936'
+duplicate_seq_nos = [
+    'M857'
 ]
 
 bad_name_case = [
-    'T970',
-    'T969',
-    'M842'
+    ('T970', 'Destiny', 'Cusick'),
+    ('M842', 'Dennis', 'Knight'),
+    ('T985', 'Sarina', 'Eames-Wardell'),
+    ('K527', 'Dion', 'Nicholson')
+]
+
+bad_seq_nos = [
+    # first name, last name, listed seq no, correct seq no
+    ('Ricardo', 'Posada', 'K520', 'K620'),
+    ('Ronnie', 'Anderson', 'T936', 'T396')
 ]
 
 
 def clean_name_capitalization(row):
-    if row['unique_internal_identifier'] in bad_name_case:
-        row['first_name'] = row['first_name'].title()
-        row['last_name'] = row['last_name'].title()
+    for cop in bad_name_case:
+        if row['unique_internal_identifier'] == cop[0]:
+            row['first_name'] = cop[1]
+            row['last_name'] = cop[2]
+            break
     return row
 
 
@@ -80,7 +88,7 @@ def parse_name(row):
 
 
 def job_code_to_title(row):
-    job_code = row['job_code']
+    job_code = int(row['job_code'])
     job_title = row['job_title']
     try:
         job_title = code_to_job[job_code]
@@ -101,6 +109,7 @@ def clean_gender(gender):
 
 
 def int_to_race(rint):
+    rint = int(rint)
     if rint == 1:
         race = 'WHITE'
     elif rint == 2:
@@ -123,6 +132,10 @@ def clean_seq_no(row):
     row['unique_internal_identifier'] = row['unique_internal_identifier'].replace('-','').upper()
     if not seq_no_re.fullmatch(row['unique_internal_identifier']):
         raise Exception(f"Invalid sequence number {row['unique_internal_identifier']}")
+    for cop in bad_seq_nos:
+        if row['unique_internal_identifier'] == cop[2] and row['first_name'] == cop[0] and row['last_name'] == cop[1]:
+            row['unique_internal_identifier'] = cop[3]
+            break
     return row
 
 
@@ -155,15 +168,16 @@ def main():
                 code_to_job[int(row['Job Code'])] = row['Job Title']
                 jobs.append(row['Job Title'])
     eprint("Importing raw roster", CSV_FILENAME)
-    dirty = pd.read_csv(os.path.join(os.path.dirname(__file__), CSV_FILENAME))
+    dirty = pd.read_csv(os.path.join(os.path.dirname(__file__), CSV_FILENAME), encoding='latin1')
     eprint('Removing bad rows')
-    dirty = dirty[~dirty['SEQ# (A99 only)'].isin(bad_seq_nos)]
+    dirty = dirty[~dirty['SEQ# (A99 only)'].isin(duplicate_seq_nos)]
+    dirty = dirty[dirty['SEQ# (A99 only)'].str.contains('BPD Ofc')==False]
     clean = pd.DataFrame()
+    clean['first_name'] = dirty['First Name']
+    clean['last_name'] = dirty['Last Name'].apply(clean_last_names)
     clean['unique_internal_identifier'] = dirty['SEQ# (A99 only)']
     eprint('Cleaning sequence numbers')
     clean = clean.apply(clean_seq_no, axis='columns')
-    clean['first_name'] = dirty['First Name']
-    clean['last_name'] = dirty['Last Name'].apply(clean_last_names)
     eprint('Cleaning name capitalization')
     clean = clean.apply(clean_name_capitalization, axis='columns')
     clean['middle_initial'] = dirty['Middle Name']
@@ -191,7 +205,7 @@ def main():
     del clean['job_title']
 
     
-    clean.to_csv(sys.stdout, index=False)
+    clean.to_csv('output.csv', index=False)
 
 
 if __name__ == '__main__':
