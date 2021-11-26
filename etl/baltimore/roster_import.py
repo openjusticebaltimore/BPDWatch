@@ -29,7 +29,9 @@ bad_name_case = [
     ('T970', 'Destiny', 'Cusick'),
     ('M842', 'Dennis', 'Knight'),
     ('T985', 'Sarina', 'Eames-Wardell'),
-    ('K527', 'Dion', 'Nicholson')
+    ('K527', 'Dion', 'Nicholson'),
+    ('K608', 'Daniel', 'Quezada'),
+    ('K611', 'Zain', 'Harpsupshur')
 ]
 
 bad_seq_nos = [
