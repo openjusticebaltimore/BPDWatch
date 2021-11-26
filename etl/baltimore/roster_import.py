@@ -4,7 +4,7 @@ import sys
 import csv
 import re
 from datetime import datetime
-from utils import name_re, eprint
+from utils import eprint
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -76,7 +76,7 @@ def parse_name(row):
         middle_initial = matches.group('middle_initial')
         assert first_name and last_name
     except:
-        raise Exception(f'Unable to parse name {full_name}')
+        raise Exception('Unable to parse name {}'.format(full_name))
     row['first_name'] = first_name
     row['last_name'] = last_name
     row['suffix'] = suffix
@@ -97,7 +97,7 @@ def job_code_to_title(row):
     except KeyError:
         job_title = job_title.replace(' EID','')  # No need to keep the EID distinction in BPD Watch
         if job_title not in jobs:
-            raise Exception(f"Job title not found: {job_title}")
+            raise Exception("Job title not found: {}".format(job_title))
     else:
         job_title = job_title.replace(' - EID','')
     row['job_title'] = job_title
@@ -133,7 +133,7 @@ def int_to_race(rint):
 def clean_seq_no(row):
     row['unique_internal_identifier'] = row['unique_internal_identifier'].replace('-','').upper()
     if not seq_no_re.fullmatch(row['unique_internal_identifier']):
-        raise Exception(f"Invalid sequence number {row['unique_internal_identifier']}")
+        raise Exception("Invalid sequence number {}".format(row['unique_internal_identifier']))
     for cop in bad_seq_nos:
         if row['unique_internal_identifier'] == cop[2] and row['first_name'] == cop[0] and row['last_name'] == cop[1]:
             row['unique_internal_identifier'] = cop[3]

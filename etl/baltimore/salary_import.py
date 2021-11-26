@@ -79,7 +79,7 @@ def add_salary(officer, rows, year):
     db.session.add(salary)
     SalaryImportLog.log_change(
         officer,
-        f'Added salary for FY{year}: Salary {annual_salary}, Overtime {overtime_pay}'
+        'Added salary for FY{}: Salary {}, Overtime {}'.format(year, annual_salary, overtime_pay)
     )
 
 
@@ -161,7 +161,7 @@ def import_salaries(csv_filename):
                                 pdb.set_trace()
             if not added_salaries and len(officer.salaries) == 0:
                 if officer.unique_internal_identifier not in missing_officers:
-                    print(f'Officer {officer.last_name},{officer.first_name} ({officer.unique_internal_identifier}) not found in salary charts')
+                    print('Officer {},{} ({}) not found in salary charts'.format(officer.last_name, officer.first_name, officer.unique_internal_identifier))
                     pdb.set_trace()
         
         print("Proposed changes:")
