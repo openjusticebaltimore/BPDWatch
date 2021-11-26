@@ -1,0 +1,1 @@
+delete from assignments a using assignments b where a.id < b.id and a.officer_id = b.officer_id and a.job_id = b.job_id and a.star_date = b.star_date;

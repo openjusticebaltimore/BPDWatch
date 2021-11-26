@@ -100,7 +100,7 @@ def job_code_to_title(row):
             raise Exception(f"Job title not found: {job_title}")
     else:
         job_title = job_title.replace(' - EID','')
-    row['rank'] = job_title
+    row['job_title'] = job_title
     return row
 
 
@@ -197,15 +197,15 @@ def main():
     clean['rehire_date'] = dirty['Rehire Date']
     clean['promotion_date'] = dirty['Promotion Date']
     eprint('Cleaning assignments')
-    clean.apply(clean_assignment_date, axis='columns')
+    clean = clean.apply(clean_assignment_date, axis='columns')
     clean['employment_date'] = clean['employment_date'].apply(clean_employment_date)
     clean.insert(0, "department_id", DEPARTMENT_ID)
     
     del clean['rehire_date']
     del clean['promotion_date']
     del clean['job_code']
-    del clean['job_title']
-
+    
+    # import pdb; pdb.set_trace()
     
     clean.to_csv(sys.stdout, index=False)
 

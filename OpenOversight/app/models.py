@@ -172,9 +172,11 @@ class Officer(BaseModel):
 
 class Salary(BaseModel):
     __tablename__ = 'salaries'
+    __table_args__ = (UniqueConstraint('officer_id', 'year',
+                      name='unique_salaries_per_officer_per_year'), )
 
     id = db.Column(db.Integer, primary_key=True)
-    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'), nullable=False)
     officer = db.relationship('Officer', back_populates='salaries')
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
     overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=False, server_default='0')
@@ -187,6 +189,8 @@ class Salary(BaseModel):
 
 class Assignment(BaseModel):
     __tablename__ = 'assignments'
+    __table_args__ = (UniqueConstraint('officer_id', 'job_id', 'star_date', 'resign_date',
+                      name='unique_assignments_per_officer'), )
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
@@ -201,7 +205,7 @@ class Assignment(BaseModel):
 
     def __repr__(self):
         return '<Assignment: ID {} : {}>'.format(self.officer_id,
-                                                 self.star_no)
+                                                 self.job.job_title)
 
 
 class Unit(BaseModel):
