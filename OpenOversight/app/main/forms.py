@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm as Form
-from wtforms_sqlalchemy.fields import QuerySelectField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
                      SelectField, SubmitField,
                      HiddenField, FormField, FieldList, BooleanField)

@@ -22,4 +22,3 @@ future==0.18.2
 email-validator==1.0.5
 requests==2.24.0
 pdfrw==0.4
-WTForms-SQLAlchemy==0.1
