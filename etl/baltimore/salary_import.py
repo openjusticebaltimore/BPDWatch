@@ -22,7 +22,9 @@ missing_officers = [
     'K182',
     'T828',
     'K074',
-    'K235'
+    'K235',
+    'TA65',
+    'K636'
 ]
 
 BEGIN_YEAR = 2011

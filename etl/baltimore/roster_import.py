@@ -205,7 +205,7 @@ def main():
     del clean['job_title']
 
     
-    clean.to_csv('output.csv', index=False)
+    clean.to_csv(sys.stdout, index=False)
 
 
 if __name__ == '__main__':
