@@ -178,11 +178,11 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                     fieldname, getattr(officer, fieldname), row[fieldname]))
             setattr(officer, fieldname, row[fieldname])
 
-    # Name and gender are the only potentially changeable fields, so update those
+    # Name, age, and gender are the only potentially changeable fields, so update those
     update_officer_field('last_name')
     update_officer_field('first_name')
     update_officer_field('middle_initial')
-
+    update_officer_field('age')
     update_officer_field('suffix')
     update_officer_field('gender')
 
@@ -243,6 +243,7 @@ def create_officer_from_row(row, department_id):
     set_field_from_row(row, officer, 'last_name', allow_blank=False)
     set_field_from_row(row, officer, 'first_name', allow_blank=False)
     set_field_from_row(row, officer, 'middle_initial')
+    set_field_from_row(row, officer, 'age')
     set_field_from_row(row, officer, 'suffix')
     set_field_from_row(row, officer, 'race')
     set_field_from_row(row, officer, 'gender')

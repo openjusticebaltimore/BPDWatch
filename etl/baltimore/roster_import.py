@@ -189,6 +189,8 @@ def main():
     clean['gender'] = dirty['SEX'].apply(clean_gender)
     eprint('Setting race')
     clean['race'] = dirty['Ethnic Group'].apply(int_to_race)
+    eprint('Setting age')
+    clean['age'] = dirty['Date of Birth Age']
     eprint('Setting rank')
     clean['job_code'] = dirty['Job Code']
     clean['job_title'] = dirty['Job Title']
@@ -204,7 +206,7 @@ def main():
     del clean['rehire_date']
     del clean['promotion_date']
     del clean['job_code']
-    
+
     # import pdb; pdb.set_trace()
     
     clean.to_csv(sys.stdout, index=False)
