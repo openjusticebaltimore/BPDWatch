@@ -1,0 +1,1 @@
+update jobs set "order" = 0 where department_id = 1 and id >= 122;
