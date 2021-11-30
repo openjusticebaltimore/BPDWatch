@@ -84,7 +84,7 @@
 {% endblock %}
 {% block content %}
 
-{% if officer.department.short_name == 'BPD' %}
+{% if officer.department_id == 1 %}
 {% include 'partials/complaint_modal.html' %}
 {% endif %}
 
@@ -167,7 +167,7 @@
                 <td><b>First Employment Date</b></td>
                 <td>{{ officer.employment_date }}</td>
               </tr>
-              {% if officer.department.short_name == 'BPD' %}
+              {% if officer.department_id == 1 %}
               {% if officer.do_not_call == True %}
               <tr>
                 <td colspan="2">
