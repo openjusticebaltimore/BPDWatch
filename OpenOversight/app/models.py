@@ -190,7 +190,7 @@ class Salary(BaseModel):
 
 class Assignment(BaseModel):
     __tablename__ = 'assignments'
-    __table_args__ = (UniqueConstraint('officer_id', 'job_id', 'star_date', 'resign_date',
+    __table_args__ = (UniqueConstraint('officer_id', 'job_id',
                       name='unique_assignments_per_officer'), )
 
     id = db.Column(db.Integer, primary_key=True)
