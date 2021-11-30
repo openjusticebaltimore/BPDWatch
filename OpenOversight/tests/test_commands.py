@@ -185,8 +185,10 @@ def test_add_job_title__different_departments(session, department):
 
 
 def test_csv_import_new(csvfile):
-    # Delete all current officers
+    # Delete all current officers, assignments, and salaries
+    Assignment.query.delete()
     Officer.query.delete()
+    Salary.query.delete()
 
     assert Officer.query.count() == 0
 
@@ -210,8 +212,10 @@ def test_csv_import_update(csvfile):
 
 
 def test_csv_import_idempotence(csvfile):
-    # Delete all current officers
+    # Delete all current officers, assignments, and salaries
+    Assignment.query.delete()
     Officer.query.delete()
+    Salary.query.delete()
 
     assert Officer.query.count() == 0
 
@@ -280,9 +284,10 @@ def test_csv_changed_static_field(csvfile):
 
 
 def test_csv_new_assignment(csvfile):
-    # Delete all current officers and assignments
+    # Delete all current officers, assignments, and salaries
     Assignment.query.delete()
     Officer.query.delete()
+    Salary.query.delete()
 
     assert Officer.query.count() == 0
 
@@ -381,9 +386,10 @@ def test_csv_new_officer(csvfile):
 
 
 def test_csv_new_salary(csvfile):
-    # Delete all current officers and salaries
+    # Delete all current officers, salaries, and assignments
     Salary.query.delete()
     Officer.query.delete()
+    Assignment.query.delete()
 
     assert Officer.query.count() == 0
 
@@ -406,6 +412,7 @@ def test_csv_new_salary(csvfile):
 
     # Update salary
     df.loc[0, "salary"] = "150000"
+    df.loc[0, "salary_year"] = "2099"
     df.to_csv(csvfile)
 
     assert Officer.query.count() > 0
