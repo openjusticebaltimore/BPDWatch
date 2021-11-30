@@ -13,20 +13,6 @@ from OpenOversight.app.utils import prompt_yes_no
 
 db.app = app
 
-missing_officers = [
-    'F956',
-    'T819',
-    'K238',
-    'K175',
-    'K130',
-    'K182',
-    'T828',
-    'K074',
-    'K235',
-    'TA65',
-    'K636'
-]
-
 BEGIN_YEAR = 2011
 END_YEAR = 2021
 
@@ -160,9 +146,8 @@ def import_salaries(csv_filename):
                                         officer.last_name, officer.suffix))
                                 pdb.set_trace()
             if not added_salaries and len(officer.salaries) == 0:
-                if officer.unique_internal_identifier not in missing_officers:
-                    print('Officer {},{} ({}) not found in salary charts'.format(officer.last_name, officer.first_name, officer.unique_internal_identifier))
-                    pdb.set_trace()
+                print('WARNING: Officer {},{} ({}) not found in salary charts'.format(officer.last_name, officer.first_name, officer.unique_internal_identifier))
+                # pdb.set_trace()
         
         print("Proposed changes:")
         SalaryImportLog.print_logs()

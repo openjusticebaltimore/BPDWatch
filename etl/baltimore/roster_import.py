@@ -1,43 +1,61 @@
+from numpy.core.numeric import full
 import pandas as pd
 import os
 import sys
 import csv
 import re
 from datetime import datetime
-from utils import eprint
+from utils import eprint, other_id_re
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from OpenOversight.app import create_app, models  # noqa E402
-from OpenOversight.app.models import db  # noqa E402
+from OpenOversight.app.models import Assignment, db  # noqa E402
 
-CSV_FILENAME = 'rosters/HRIS Employee Demographics 12.3.20 reviewed.csv'
+CSV_FILENAME = 'rosters/Workday Demographics Report 11.18.21 reviewed.csv'
 DEPARTMENT_ID = 1
 
 app = create_app('development')
 db.app = app
 
-jobs = []
+scraped_jobs = []
+existing_jobs = [job.job_title for job in models.Job.query.filter_by(department_id=1).all()]
 code_to_job = {}
-seq_no_re = re.compile(r"^[A-Z][\dA-Z]\d\d$")
-
-duplicate_seq_nos = [
-    'M857'
-]
 
 bad_name_case = [
-    ('T970', 'Destiny', 'Cusick'),
-    ('M842', 'Dennis', 'Knight'),
-    ('T985', 'Sarina', 'Eames-Wardell'),
-    ('K527', 'Dion', 'Nicholson'),
     ('K608', 'Daniel', 'Quezada'),
-    ('K611', 'Zain', 'Harpsupshur')
+    ('K611', 'Zain', 'Harpsupshur'),
+    ('K823', 'James', 'Ulysse'),
+    ('H014', 'Noraima', 'DeJesus-Willem'),
+    ('G542', 'Albert', 'DellaRocco'),
+    ('T830', 'LaTonya', 'Dutton'),
+    ('J552', 'Dylan', 'LaPorta'),
+    ('J483', 'Christopher', 'LeMaitre'),
+    ('J467', 'DaSean', 'Moore'),
+    ('T497', 'Denise', 'ONeale'),
+    ('T650', 'DeRond', 'Ricks'),
+    ('G337', 'McKinley', 'Smith'),
+    ('M801', 'LaWang', 'Hyman'),
+    ('K270', 'Ralph', 'DiLucci'),
+    ('K307', "D'Ara", 'Tatum'),
+    ('D721', 'Richard', 'McCarthy'),
+    ('I795', 'Larry', 'Mackall'),
+    ('J500', 'Destinee', 'Macklin'),
+    ('I783', 'Ellesse', 'McCray-Lathan'),
+    ('J971', 'Brendan', 'Machado'),
+    ('T929', 'Darcy', 'Machado')
 ]
 
-bad_seq_nos = [
-    # first name, last name, listed seq no, correct seq no
-    ('Ricardo', 'Posada', 'K520', 'K620'),
-    ('Ronnie', 'Anderson', 'T936', 'T396')
+name_fixes = [
+    ('I759', 'K Chinyere', 'Zellars'),
+    ('H322', 'Jason Loui', 'Hoover'),
+    ('K569', 'Cierra Lynn', 'Thurmond'),
+    ('K168', 'Zhi Fan', 'Zou'),
+    ('S900', 'Ayesha A', 'Larkins'),
+    ('K092', 'Antonios Zachary', 'Cornias'),
+    ('K668', 'William', 'Miller'),
+    ('TA80', 'To Uyen', 'Nguyen'),
+    ('G321', 'Bryant', 'Fair')
 ]
 
 
@@ -46,14 +64,8 @@ def clean_name_capitalization(row):
         if row['unique_internal_identifier'] == cop[0]:
             row['first_name'] = cop[1]
             row['last_name'] = cop[2]
-            break
+            return row
     return row
-
-
-def clean_last_names(data):
-    if data == 'Bernardez Ruiz':
-        return 'Bernardez-Ruiz'
-    return data
 
 
 def clean_middle_initial(row):
@@ -65,49 +77,84 @@ def clean_middle_initial(row):
     else:
         row['middle_initial'] = middle_initial
     return row
-    
-def parse_name(row):
-    full_name = row['full_name']
-    matches = name_re.fullmatch(full_name)
+
+
+def parse_name_seq_no(row):
+    full_name_seq_no = row['Other IDs']
+    if 'Suzanne Gray' in full_name_seq_no:
+        row['first_name'] = 'Suzanne'
+        row['last_name'] = 'Gray'
+        row['unique_internal_identifier'] = 'M733'
+        return row
+    matches = other_id_re.fullmatch(full_name_seq_no)
     try:
         last_name = matches.group('last_name')
-        suffix = matches.group('suffix')
         first_name = matches.group('first_name')
-        middle_initial = matches.group('middle_initial')
-        assert first_name and last_name
+        seq_no = matches.group('seq_no').upper()
+        assert first_name and last_name and seq_no
     except:
-        raise Exception('Unable to parse name {}'.format(full_name))
+        raise Exception('Unable to parse name/seq no {}'.format(full_name_seq_no))
     row['first_name'] = first_name
     row['last_name'] = last_name
-    row['suffix'] = suffix
-
-    officer = models.Officer.query.filter_by(unique_internal_identifier=row['unique_internal_identifier']).one_or_none()
-    if officer and officer.middle_initial and len(officer.middle_initial) > len(middle_initial):
-        row['middle_initial'] = officer.middle_initial
-    else:
-        row['middle_initial'] = middle_initial
+    row['unique_internal_identifier'] = seq_no
+    mc_match = re.fullmatch(r'^(Ma?c)([a-z])([a-z]+)$', row['last_name'])
+    if mc_match:
+        row['last_name'] = mc_match.group(1) + mc_match.group(2).upper() + mc_match.group(3)
+    o_match = re.fullmatch(r"^O'([a-z])([a-z]+)$", row['last_name'])
+    if o_match:
+        row['last_name'] = "O'" + o_match.group(1).upper() + o_match.group(2)
+    for name in name_fixes:
+        if seq_no == name[0]:
+            row['first_name'] = name[1]
+            row['last_name'] = name[2]
+            break
+    if seq_no == 'K668':
+        row['suffix'] = 'IV'
     return row
 
 
-def job_code_to_title(row):
-    job_code = int(row['job_code'])
+def check_job_title(row):
     job_title = row['job_title']
-    try:
-        job_title = code_to_job[job_code]
-    except KeyError:
-        job_title = job_title.replace(' EID','')  # No need to keep the EID distinction in BPD Watch
-        if job_title not in jobs:
-            raise Exception("Job title not found: {}".format(job_title))
-    else:
-        job_title = job_title.replace(' - EID','')
+    job_title = job_title.replace(' EID','')  # No need to keep the EID distinction in BPD Watch
+    job_title = job_title.replace(' (On Leave)','')
+    job_title = job_title.replace(
+        'Director of Governmental Affairs',
+        'Director Of Government Affairs'
+    )
+    job_title = job_title.replace(
+        'Police officer',
+        'Police Officer'
+    )
+    job_title = job_title.replace(' Tech ',' Technician ')
+    job_title = job_title.replace(' Supv',' Supervisor')
+    job_title = job_title.replace(' Srvc',' Services')
+    job_title = job_title.replace('Lead Tech','Lead Technician')
+    job_title = job_title.replace(' Prog ',' Program ')
+    job_title = job_title.replace(
+        'Avionics Technician Power Plant Mech',
+        'Avionics Technician/Airframe & Powerplant Mechanic'
+    )
+    job_title = job_title.replace(
+        'Aviation Mech Inspector A & P',
+        'Aviation Mechanic Inspector - Airframe & Powerplant'
+    )
+    job_title = job_title.replace(
+        'BACKGROUND INVESTIGATOR',
+        'Background Investigator'
+    )
+    if job_title not in scraped_jobs and job_title not in existing_jobs:
+        eprint("WARNING: Job title not found: {}".format(job_title))
     row['job_title'] = job_title
     return row
 
 
 def clean_gender(gender):
-    if gender == 'N':
-        gender = 'Not Sure'
-    return gender
+    if gender == 'Male':
+        return 'M'
+    elif gender == 'Female':
+        return 'F'
+    elif gender == 'Not Specified':
+        return 'Not Sure'
 
 
 def int_to_race(rint):
@@ -130,83 +177,54 @@ def int_to_race(rint):
     return race
 
 
-def clean_seq_no(row):
-    row['unique_internal_identifier'] = row['unique_internal_identifier'].replace('-','').upper()
-    if not seq_no_re.fullmatch(row['unique_internal_identifier']):
-        raise Exception("Invalid sequence number {}".format(row['unique_internal_identifier']))
-    for cop in bad_seq_nos:
-        if row['unique_internal_identifier'] == cop[2] and row['first_name'] == cop[0] and row['last_name'] == cop[1]:
-            row['unique_internal_identifier'] = cop[3]
-            break
-    return row
-
-
-def clean_assignment_date(row):
-    assignment_date = None
-    if not isinstance(row['promotion_date'], float) and row['promotion_date'].strip():
-        assignment_date = datetime.strptime(row['promotion_date'], '%m/%d/%Y').date()
-    elif not isinstance(row['rehire_date'], float) and row['rehire_date'].strip():
-        assignment_date = datetime.strptime(row['rehire_date'], '%m/%d/%Y').date()
-    
-    if not isinstance(row['employment_date'], float) and row['employment_date'].strip() and not assignment_date:
-        assignment_date = datetime.strptime(row['employment_date'], '%m/%d/%Y').date()
-    
-    row['star_date'] = assignment_date.strftime('%Y-%m-%d')
+def remove_known_assignments(row):
+    officer = models.Officer.query.filter_by(unique_internal_identifier=row['unique_internal_identifier']).one_or_none()
+    if officer:
+        for assignment in officer.assignments:
+            if assignment.job.job_title == row['job_title']:
+                row['job_title'] = None
     return row
 
 
 def clean_employment_date(data):
     if data.strip():
-        data = datetime.strptime(data, '%m/%d/%Y').strftime('%Y-%m-%d')
+        data = datetime.strptime(data, '%m/%d/%y').strftime('%Y-%m-%d')
     return data
 
 
 def main():
-    eprint('Loading job codes and titles')
+    eprint('Loading job codes')
     for filename in ['scraped_job_codes.csv', 'additional_job_codes.csv']:
         with open(os.path.join(os.path.dirname(__file__), filename), 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 code_to_job[int(row['Job Code'])] = row['Job Title']
-                jobs.append(row['Job Title'])
+                scraped_jobs.append(row['Job Title'])
     eprint("Importing raw roster", CSV_FILENAME)
     dirty = pd.read_csv(os.path.join(os.path.dirname(__file__), CSV_FILENAME), encoding='latin1')
     eprint('Removing bad rows')
-    dirty = dirty[~dirty['SEQ# (A99 only)'].isin(duplicate_seq_nos)]
-    dirty = dirty[dirty['SEQ# (A99 only)'].str.contains('BPD Ofc')==False]
+    dirty = dirty[dirty['Worker'].str.contains('BPD Ofc')==False]
     clean = pd.DataFrame()
-    clean['first_name'] = dirty['First Name']
-    clean['last_name'] = dirty['Last Name'].apply(clean_last_names)
-    clean['unique_internal_identifier'] = dirty['SEQ# (A99 only)']
-    eprint('Cleaning sequence numbers')
-    clean = clean.apply(clean_seq_no, axis='columns')
+    clean['Other IDs'] = dirty['Other IDs']
+    clean.dropna(subset = ["Other IDs"], inplace=True)
+    clean['suffix'] = ''
+    clean = clean.apply(parse_name_seq_no, axis='columns')
     eprint('Cleaning name capitalization')
     clean = clean.apply(clean_name_capitalization, axis='columns')
-    clean['middle_initial'] = dirty['Middle Name']
-    eprint('Cleaning middle names')
-    clean = clean.apply(clean_middle_initial, axis='columns')
     eprint('Setting gender')
-    clean['gender'] = dirty['SEX'].apply(clean_gender)
-    eprint('Setting race')
-    clean['race'] = dirty['Ethnic Group'].apply(int_to_race)
+    clean['gender'] = dirty['Gender'].apply(clean_gender)
+    # eprint('Setting race')
+    # clean['race'] = dirty['Ethnic Group'].apply(int_to_race)
     eprint('Setting age')
     clean['age'] = dirty['Date of Birth Age']
     eprint('Setting rank')
-    clean['job_code'] = dirty['Job Code']
-    clean['job_title'] = dirty['Job Title']
-    clean = clean.apply(job_code_to_title, axis='columns')
-    clean['employment_date'] = dirty['Service Date']
-    clean['rehire_date'] = dirty['Rehire Date']
-    clean['promotion_date'] = dirty['Promotion Date']
-    eprint('Cleaning assignments')
-    clean = clean.apply(clean_assignment_date, axis='columns')
-    clean['employment_date'] = clean['employment_date'].apply(clean_employment_date)
+    clean['job_title'] = dirty['Business Title']
+    clean = clean.apply(check_job_title, axis='columns')
+    clean = clean.apply(remove_known_assignments, axis='columns')
+    clean['employment_date'] = dirty['Original Hire Date'].apply(clean_employment_date)
     clean.insert(0, "department_id", DEPARTMENT_ID)
-    
-    del clean['rehire_date']
-    del clean['promotion_date']
-    del clean['job_code']
 
+    del clean['Other IDs']
     # import pdb; pdb.set_trace()
     
     clean.to_csv(sys.stdout, index=False)

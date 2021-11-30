@@ -17,8 +17,9 @@ suffixes = [
     '4th'
 ]
 
-# name_re = re.compile(r"^(?P<last_name>[a-zA-Z- '\.]+?)(?: (?P<suffix>(?i:" + r"|".join(suffixes) + r"))\.?)?,(?P<first_name>[a-zA-Z- '\.]+?)(?: (?P<middle_initial>[a-zA-Z])\.?)?$")
-# last_name_re = re.compile(r"^(?P<last_name>[a-zA-Z- '\.]+?)(?: (?P<suffix>(?i:" + r"|".join(suffixes) + r"))\.?)?$")
+name_re = re.compile(r"^(?P<last_name>[a-zA-Z- '\.]+?)(?: (?P<suffix>(?:" + r"|".join(suffixes) + r"))\.?)?,(?P<first_name>[a-zA-Z- '\.]+?)(?: (?P<middle_initial>[a-zA-Z])\.?)?$")
+last_name_re = re.compile(r"^(?P<last_name>[a-zA-Z- '\.]+?)(?: (?P<suffix>(?:" + r"|".join(suffixes) + r"))\.?)?$")
+other_id_re = re.compile(r"^(?P<first_name>[a-zA-Z']+) (?P<last_name>[a-zA-Z- '\.]+): Custom Identifier/Police Sequence Number/(?P<seq_no>[A-Za-z][\dA-Za-z]\d\d)$")
 
 
 def eprint(*args, **kwargs):
