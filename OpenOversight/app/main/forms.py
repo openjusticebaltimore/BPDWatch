@@ -223,6 +223,7 @@ class AddOfficerForm(Form):
                             allow_blank=True, blank_text=u'None')
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
+    age = IntegerField('Age', validators=[Optional()])
     links = FieldList(FormField(
         LinkForm,
         widget=FormFieldWidget()),
@@ -273,6 +274,7 @@ class EditOfficerForm(Form):
     )
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
+    age = IntegerField('Age', validators=[Optional()])
     unique_internal_identifier = StringField('Unique Internal Identifier',
                                              default='',
                                              validators=[Regexp(r'\w*'), Length(max=50)],

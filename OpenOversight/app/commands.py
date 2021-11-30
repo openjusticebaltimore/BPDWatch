@@ -171,6 +171,8 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             row[fieldname] = normalize_gender(row[fieldname])
 
         if row[fieldname] and getattr(officer, fieldname) != row[fieldname]:
+            if fieldname == 'age' and getattr(officer, fieldname) == int(row[fieldname]):
+                return
 
             ImportLog.log_change(
                 officer,

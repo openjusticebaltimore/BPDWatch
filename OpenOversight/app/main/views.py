@@ -986,6 +986,7 @@ def deprecated_download_dept_csv(department_id):
                     check_input(record.gender),
                     check_input(record.race),
                     check_input(record.birth_year),
+                    check_input(record.age),
                     check_input(record.employment_date),
                     " ".join(assign_dict.get(record.id, [])),
                     ) for record in records]
@@ -1021,7 +1022,7 @@ def download_dept_officers_csv(department_id):
         abort(404)
     csv_output = io.StringIO()
     csv_fieldnames = ["id", "unique identifier", "last name", "first name", "middle initial", "suffix", "gender",
-                      "race", "birth year", "employment date", "badge number", "job title", "most recent salary"]
+                      "race", "birth year", "age", "employment date", "badge number", "job title", "most recent salary"]
     csv_writer = csv.DictWriter(csv_output, fieldnames=csv_fieldnames)
     csv_writer.writeheader()
 
@@ -1046,6 +1047,7 @@ def download_dept_officers_csv(department_id):
             "gender": check_output(officer.gender),
             "race": check_output(officer.race),
             "birth year": officer.birth_year,
+            "age": officer.age,
             "employment date": officer.employment_date,
             "badge number": most_recent_assignment and most_recent_assignment.star_no,
             "job title": most_recent_title,

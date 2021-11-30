@@ -26,6 +26,7 @@
         <h4><small><a href="{{ url_for( 'main.add_unit' )}}">Don't see your unit? Add one!</a></small></h4>
         {{ wtf.form_field(form.employment_date) }}
         {{ wtf.form_field(form.birth_year) }}
+        {{ wtf.form_field(form.age) }}
         <div>
             <legend>{{ form.salaries.label }}</legend>
             {% for subform in form.salaries %}

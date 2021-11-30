@@ -132,6 +132,7 @@ def add_officer_profile(form, current_user):
                       race=form.race.data,
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
+                      age=form.age.data,
                       employment_date=form.employment_date.data,
                       department_id=form.department.data.id,
                       unique_internal_identifier=form.unique_internal_identifier.data)
