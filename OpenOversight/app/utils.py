@@ -569,6 +569,7 @@ def crop_image(image, crop_data=None, department_id=None):
 
     SIZE = 300, 300
     if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
+        pimage.close()
         return image
 
     if crop_data:
@@ -579,6 +580,7 @@ def crop_image(image, crop_data=None, department_id=None):
 
     cropped_image_buf = BytesIO()
     pimage.save(cropped_image_buf, image_type)
+    pimage.close()
 
     return upload_image_to_s3_and_store_in_db(cropped_image_buf, current_user.get_id(), department_id)
 
@@ -597,6 +599,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         image_buf.seek(0)
         pimage = Pimage.open(image_buf)
         date_taken = find_date_taken(pimage)
+        pimage.close()
         if date_taken:
             date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
     else:
