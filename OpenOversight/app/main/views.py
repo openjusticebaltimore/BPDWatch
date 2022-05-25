@@ -537,6 +537,11 @@ def edit_department(department_id):
         return render_template('add_edit_department.html', form=form, update=True, jsloads=jsloads)
 
 
+@main.route('/donotcall')
+def donotcall():
+    return redirect(url_for('main.list_officer', department_id=1, do_not_call=[1]))
+
+
 @main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
                  first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], do_not_call=[], min_pay=None, max_pay=None):
