@@ -124,23 +124,26 @@
         </div>
         {% if department.short_name == 'BPD' %}
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-do-not-call">
-            <h3 class="panel-title accordion-toggle">Do Not Call List</h3>
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-sao-list">
+            <h3 class="panel-title accordion-toggle">SAO Lists</h3>
           </div>
-          <div class="collapse in" id="filter-do-not-call">
+          <div class="collapse in" id="filter-sao-list">
             <div class="panel-body">
               <div class="form-group checkbox">
-                <label class="form-check more-info">
-                  <input type="checkbox" class="form-check-input" id="do_not_call" name="do_not_call" value="1" {% if '1' in form_data['do_not_call'] %}checked="checked" {% endif %}/>Questionable Integrity
-                </label>
-                <span class="do-not-call">
-                  <a role="button" tabindex="0" data-toggle="popover" data-placement="bottom" trigger="focus">
-                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                  </a>
-                </span>
-                <label class="form-check">
-                  <input type="checkbox" class="form-check-input" id="not_do_not_call" name="do_not_call" value="0" {% if '0' in form_data['do_not_call'] %}checked="checked" {% endif %}/>Not listed
-                </label>
+                {% for choice in choices['sao_list'] %}
+                <div class="sao-list-option">
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" id="sao-list-{{ choice[0] | lower | replace(' ','-') }}" name="sao_list" value="{{ choice[0] }}" {% if choice[0] in form_data['sao_list'] %}checked="checked" {% endif %}/>{{ choice[1] }}
+                  </label>
+                  {% if choice[0] != 'Not Listed' %}
+                  <span class="sao-list more-info {{ choice[0] | lower | replace(' ','-') }}">
+                    <a role="button" tabindex="0" data-toggle="popover" data-placement="bottom" trigger="focus">
+                      <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                    </a>
+                  </span>
+                  {% endif %}
+                </div>
+                {% endfor %}
               </div>
             </div>
           </div>
@@ -261,15 +264,26 @@
                     <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{{ officer.full_name() }}</a>
                   </h2>
                   <div class="row">
-                    {% if officer.department_id == 1 and officer.do_not_call == true %}
-                    <div class="col-md-12 col-xs-12">
-                      <p class="do-not-call">
-                        <span class="label label-danger">QUESTIONABLE INTEGRITY</span>
-                        <a role="button" tabindex="0" data-toggle="popover" trigger="focus" onclick="return false;">
-                          <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                        </a>
-                      </p>
-                    </div>
+                    {% if officer.department_id == 1 %}
+                      {% if officer.sao_list == 'Do Not Call' %}
+                      <div class="col-md-12 col-xs-12">
+                        <p class="sao-list do-not-call">
+                          <span class="label label-danger">DO NOT CALL</span>
+                          <a role="button" tabindex="0" data-toggle="popover" trigger="focus" onclick="return false;">
+                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                          </a>
+                        </p>
+                      </div>
+                      {% elif officer.sao_list == 'Credibility Issues' %}
+                      <div class="col-md-12 col-xs-12">
+                        <p class="sao-list credibility-issues">
+                          <span class="label label-warning">Credibility Issues</span>
+                          <a role="button" tabindex="0" data-toggle="popover" trigger="focus" onclick="return false;">
+                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                          </a>
+                        </p>
+                      </div>
+                      {% endif %}
                     {% endif %}
                     <div class="col-md-6 col-xs-6">
                       <dl>
@@ -298,14 +312,22 @@
         {% endfor %}
       </ul>
       <script>
-        const content = '<a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-md-ci-cr-marilyn-mosby-do-not-call-list-20211029-rplz7z7nlnbfnhnfslhtrmmphu-story.html">Click here</a> ' +
-          'to read more about the Baltimore State&#39;s Attorney&#39;s Office&#39;s "Do Not Call" list of officers with possible integrity issues.';
+        const dncContent = '<a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-md-ci-cr-marilyn-mosby-do-not-call-list-20211029-rplz7z7nlnbfnhnfslhtrmmphu-story.html">Click here</a> ' +
+          'to read more about the Baltimore State&#39;s Attorney&#39;s Office&#39;s "Do Not Call" list of officers they won\'t call to testify in court.';
+        const ciContent = '<a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-md-ci-cr-marilyn-mosby-list-cops-credibility-issues-20220525-n5kab6xio5cpjjgio7acoehaiu-story.html">Click here</a> ' +
+          'to read more about the Baltimore State&#39;s Attorney&#39;s Office&#39;s list of officers with possible credibility issues.'
         $(function () {
-          $('[data-toggle="popover"]').popover({
+          $('.do-not-call [data-toggle="popover"]').popover({
             html: true,
             trigger: 'focus',
-            content: content,
+            content: dncContent,
             title: 'Do Not Call list'
+          });
+          $('.credibility-issues [data-toggle="popover"]').popover({
+            html: true,
+            trigger: 'focus',
+            content: ciContent,
+            title: 'Credibility Issues list'
           });
         });
       </script>

@@ -33,7 +33,7 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm,
                     OfficerLinkForm, ComplaintForm)
 from .model_view import ModelView
-from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
+from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES, SAO_LIST_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note,
                       Description, Salary, Job)
@@ -544,7 +544,7 @@ def donotcall():
 
 @main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
-                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], do_not_call=[], min_pay=None, max_pay=None):
+                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], integrity_issues=[], min_pay=None, max_pay=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -559,7 +559,7 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
     form_data['unit'] = unit
     form_data['unique_internal_identifier'] = unique_internal_identifier
     form_data['photo'] = photo
-    form_data['do_not_call'] = do_not_call
+    form_data['integrity_issues'] = integrity_issues
     form_data['min_pay'] = min_pay
     form_data['max_pay'] = max_pay
 
@@ -594,8 +594,6 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
         form_data['gender'] = request.args.getlist('gender')
     if request.args.get('photo') and all(photo in ['0', '1'] for photo in request.args.getlist('photo')):
         form_data['photo'] = request.args.getlist('photo')
-    if request.args.get('do_not_call') and all(do_not_call in ['0', '1'] for do_not_call in request.args.getlist('do_not_call')):
-        form_data['do_not_call'] = request.args.getlist('do_not_call')
     if request.args.get('min_pay') and re.fullmatch(r'\d+(\.\d\d)?', request.args.get('min_pay')):
         form_data['min_pay'] = request.args.get('min_pay')
     if request.args.get('max_pay') and re.fullmatch(r'\d+(\.\d\d)?', request.args.get('max_pay')):
@@ -605,6 +603,8 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
+    if request.args.get('sao_list') and all(_list in [slc[0] for slc in SAO_LIST_CHOICES] for _list in request.args.getlist('sao_list')):
+        form_data['sao_list'] = request.args.getlist('sao_list')
 
     officers = filter_by_form(
         form_data, Officer.query, department_id, order
@@ -623,7 +623,8 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
         'race': RACE_CHOICES,
         'gender': GENDER_CHOICES,
         'rank': [(rc, rc) for rc in rank_choices],
-        'unit': [('Not Sure', 'Not Sure')] + unit_choices
+        'unit': [('Not Sure', 'Not Sure')] + unit_choices,
+        'sao_list': SAO_LIST_CHOICES
     }
 
     def gen_pagination_url(page):
@@ -632,7 +633,7 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
                        rank=form_data['rank'], min_age=form_data['min_age'], max_age=form_data['max_age'],
                        last_name=form_data['last_name'], first_name=form_data['first_name'], badge=form_data['badge'],
                        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'],
-                       photo=form_data['photo'], do_not_call=form_data['do_not_call'], min_pay=form_data['min_pay'],
+                       photo=form_data['photo'], sao_list=form_data['sao_list'], min_pay=form_data['min_pay'],
                        max_pay=form_data['max_pay'])
     prev_url = gen_pagination_url(page=officers.prev_num)
     next_url = gen_pagination_url(page=officers.next_num)

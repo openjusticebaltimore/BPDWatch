@@ -27,7 +27,7 @@ from PIL.PngImagePlugin import PngImageFile
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
-from .main.choices import RACE_CHOICES, GENDER_CHOICES
+from .main.choices import RACE_CHOICES, GENDER_CHOICES, SAO_LIST_CHOICES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -299,8 +299,6 @@ def filter_by_form(form_data, officer_query, department_id=None, order=0):
     job_ids = []
     if form_data.get('rank'):
         job_ids = [job.id for job in Job.query.filter_by(department_id=department_id).filter(Job.job_title.in_(form_data.get("rank"))).all()]
-
-        print(form_data)
         if 'Not Sure' in form_data['rank']:
             form_data['rank'].append(None)
 
@@ -334,15 +332,21 @@ def filter_by_form(form_data, officer_query, department_id=None, order=0):
                 Officer.id.in_(face_officer_ids)
             )
     
-    if form_data.get('do_not_call') and all(dnc in ['0', '1'] for dnc in form_data['do_not_call']):
-        if '0' in form_data['do_not_call'] and '1' not in form_data['do_not_call']:
-            officer_query = officer_query.filter(
-                Officer.do_not_call.is_(False)
-            )
-        elif '1' in form_data['do_not_call'] and '0' not in form_data['do_not_call']:
-            officer_query = officer_query.filter(
-                Officer.do_not_call.is_(True)
-            )
+    sao_list_values = [x for x,_ in SAO_LIST_CHOICES]
+    if form_data.get('sao_list') and all(dnc in sao_list_values for dnc in form_data['sao_list']):
+        or_clauses = []
+        if 'Not Listed' in form_data['sao_list']:
+            or_clauses.append(or_(
+                Officer.sao_list == None,
+                Officer.sao_list == '',
+                Officer.sao_list == 'Not Listed'
+            ))
+        if 'Do Not Call' in form_data['sao_list']:
+            or_clauses.append(Officer.sao_list == 'Do Not Call')
+        if 'Credibility Issues' in form_data['sao_list']:
+            or_clauses.append(Officer.sao_list == 'Credibility Issues')
+        if or_clauses:
+            officer_query = officer_query.filter(or_(*or_clauses))
 
     # Some SQL acrobatics to left join only the most recent assignment and salary per officer
     assignment_row_num_col = func.row_number().over(

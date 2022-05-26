@@ -8,7 +8,9 @@
   <div class="hero-section no-sub">
     <div class="hero">Browse a Department</div>
   </div>
+</div>
 
+<div class="container" role="main">
   <div class="text-center frontpage-leads">
   {% for department in departments %}
       <div class="btn-group department">
@@ -41,9 +43,17 @@
         {% if department.short_name == 'BPD' %}
         <h3>Baltimore State's Attorney's Office's 
           <a target="_blank" href="https://www.stattorney.org/media-center/press-releases/2428-state-s-attorneys-mosby-and-braveboy-publish-do-not-call-lists">Do Not Call list</a></h3>
-        <span class="small">The Baltimore State's Attorney's Office compiled a list of officers with criminal convictions or questionable integrity.</span>
+        <span class="small">The Baltimore State's Attorney's Office compiled a list of officers they won't call to testify in court, either because of criminal convictions or substantiated claims of misconduct.</span>
         <p>
-          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id, do_not_call=[1]) }}">
+          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id, sao_list=['Do Not Call']) }}">
+            See the list
+         </a>
+        </p>
+        <h3>Baltimore State's Attorney's Office's 
+          <a target="_blank" href="https://www.baltimoresun.com/news/crime/bs-md-ci-cr-marilyn-mosby-list-cops-credibility-issues-20220525-n5kab6xio5cpjjgio7acoehaiu-story.html">list of officers with credibility issues</a></h3>
+        <span class="small">The Baltimore State's Attorney's Office compiled a larger list of officers about whom they have concerns regarding their integrity and whether their testimony in court can be trusted. These officers have not had allegations against them sustained, are not prohibited from testifying in court, and most are actively employed with BPD.</span>
+        <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id, sao_list=['Credibility Issues']) }}">
             See the list
          </a>
         </p>

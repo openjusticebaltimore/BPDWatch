@@ -15,3 +15,4 @@ GENDER_CHOICES = [('Not Sure', 'Not Sure'), ('M', 'Male'), ('F', 'Female'), ('Ot
 STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
 LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]
 AGE_CHOICES = [(str(age), str(age)) for age in range(16, 101)]
+SAO_LIST_CHOICES = [('Do Not Call', 'Do Not Call'), ('Credibility Issues', 'Credibility Issues'), ('Not Listed', 'Not Listed')]

@@ -794,28 +794,29 @@ p.bg-danger {
     font-weight: 600;
 }
 
-.do-not-call {
+.sao-list {
     margin: 0 0 10px;
 }
 
-.do-not-call .glyphicon {
+.sao-list .glyphicon, .credibility-issues .glyphicon {
     font-size: 14px;
     color: grey;
 }
 
-.search-results .do-not-call .glyphicon {
+.search-results .sao-list .glyphicon,
+.search-results .credibility-issues .glyphicon {
     position: relative;
     top: 4px;
 }
 
-.do-not-call a:focus {
+.sao-list a:focus, .credibility-issues a:focus {
     outline: none;
 }
 
-#filter-do-not-call label.more-info {
+#filter-sao-list .sao-list-option label {
     display: inline-block;
 }
 
-.do-not-call-label {
+.sao-list-label, .credibility-issues-label {
     font-size: 100%;
 }
