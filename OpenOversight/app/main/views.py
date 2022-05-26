@@ -539,12 +539,12 @@ def edit_department(department_id):
 
 @main.route('/donotcall')
 def donotcall():
-    return redirect(url_for('main.list_officer', department_id=1, do_not_call=[1]))
+    return redirect(url_for('main.list_officer', department_id=1, sao_list=['Do Not Call', 'Credibility Issues']))
 
 
 @main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
-                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], integrity_issues=[], min_pay=None, max_pay=None):
+                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], sao_list=[], min_pay=None, max_pay=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -559,7 +559,6 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
     form_data['unit'] = unit
     form_data['unique_internal_identifier'] = unique_internal_identifier
     form_data['photo'] = photo
-    form_data['integrity_issues'] = integrity_issues
     form_data['min_pay'] = min_pay
     form_data['max_pay'] = max_pay
 
