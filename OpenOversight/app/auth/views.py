@@ -277,6 +277,8 @@ def edit_user(user_id):
                     flash('You cannot edit your own account!')
                     form = EditUserForm(obj=user)
                     return render_template('auth/user.html', user=user, form=form)
+                if current_app.config['APPROVE_REGISTRATIONS'] and form.approved.data and not user.approved and not user.confirmed:
+                    admin_resend_confirmation(user)
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
@@ -301,6 +303,66 @@ def delete_user(user_id):
         return redirect(url_for('auth.get_users'))
 
     return render_template('auth/user_delete.html', user=user)
+
+
+@auth.route('/users/<int:user_id>/enable', methods=['GET'])
+@admin_required
+def enable_user(user_id):
+    user = User.query.get(user_id)
+    if not user or user.is_administrator:
+        return render_template('403.html'), 403
+    if not user.is_disabled:
+        flash('User {} is already enabled.'.format(user.username))
+    else:
+        user.is_disabled = False
+        db.session.add(user)
+        db.session.commit()
+        flash('User {} has been enabled!'.format(user.username))
+        return redirect(url_for('auth.get_users'))
+
+
+@auth.route('/users/<int:user_id>/disable', methods=['GET'])
+@admin_required
+def disable_user(user_id):
+    user = User.query.get(user_id)
+    if not user or user.is_administrator:
+        return render_template('403.html'), 403
+    if user.is_disabled:
+        flash('User {} is already disabled.'.format(user.username))
+    else:
+        user.is_disabled = True
+        db.session.add(user)
+        db.session.commit()
+        flash('User {} has been disabled!'.format(user.username))
+        return redirect(url_for('auth.get_users'))
+
+
+@auth.route('/users/<int:user_id>/approve', methods=['GET'])
+@admin_required
+def approve_user(user_id):
+    user = User.query.get(user_id)
+    if not user or user.is_administrator:
+        return render_template('403.html'), 403
+    if user.approved:
+        flash('User {} is already approved.'.format(user.username))
+    else:
+        user.approved = True
+        db.session.add(user)
+        db.session.commit()
+        token = user.generate_confirmation_token()
+        send_email(user.email, 'Confirm Your Account',
+                   'auth/email/confirm', user=user, token=token)
+        flash('User {} has been approved!'.format(user.username))
+        return redirect(url_for('auth.get_users'))
+
+
+@auth.route('/users/<int:user_id>/resend', methods=['GET'])
+@admin_required
+def resend_confirmation_for_user(user_id):
+    user = User.query.get(user_id)
+    if not user or user.is_administrator:
+        return render_template('403.html'), 403
+    return admin_resend_confirmation(user)
 
 
 def admin_resend_confirmation(user):

@@ -36,6 +36,15 @@
 						<div class="row-actions">
 							<span class="edit"><a href="{{ url_for('auth.edit_user', user_id=user.id)}}">Edit user</a> | </span>
 							<span class="profile"><a href="{{ url_for('main.profile', username=user.username)}}">Profile</a></span>
+							{% if user.is_disabled %}
+							<span class="enable">| <a href="{{user.id}}/enable">Enable</a></span>
+							{% elif user.confirmed %}
+							<span class="disable">| <a href="{{user.id}}/disable">Disable</a></span>
+							{% elif not user.approved %}
+							<span class="approve">| <a href="{{user.id}}/approve">Approve</a></span>
+							{% else %}
+							<span class="resend">| <a href="{{user.id}}/resend">Re-send confirmation</a></span>
+							{% endif %}
 						</div>
 					</td>
 					<td><a href="mailto:{{user.email}}">{{ user.email }}</a></td>

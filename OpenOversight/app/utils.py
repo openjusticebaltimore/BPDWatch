@@ -331,13 +331,13 @@ def filter_by_form(form_data, officer_query, department_id=None, order=0):
             officer_query = officer_query.filter(
                 Officer.id.in_(face_officer_ids)
             )
-    
-    sao_list_values = [x for x,_ in SAO_LIST_CHOICES]
+
+    sao_list_values = [x for x, _ in SAO_LIST_CHOICES]
     if form_data.get('sao_list') and all(dnc in sao_list_values for dnc in form_data['sao_list']):
         or_clauses = []
         if 'Not Listed' in form_data['sao_list']:
             or_clauses.append(or_(
-                Officer.sao_list == None,
+                Officer.sao_list.is_(None),
                 Officer.sao_list == '',
                 Officer.sao_list == 'Not Listed'
             ))

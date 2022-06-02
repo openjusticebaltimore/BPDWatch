@@ -109,7 +109,7 @@ def test_admin_can_add_assignment(mockdata, client, session):
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
-        
+
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
             star_no='1234',
@@ -213,7 +213,7 @@ def test_admin_can_edit_assignment(mockdata, client, session):
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
-        
+
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
             star_no='1234',
@@ -271,7 +271,7 @@ def test_admin_edit_assignment_validation_error(mockdata, client, session):
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
-        
+
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
             star_no='1234',

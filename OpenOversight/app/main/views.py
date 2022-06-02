@@ -8,7 +8,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 import sys
 from traceback import format_exc
-import pdfrw
+import pdfrw  # type: ignore
 from tempfile import mkstemp
 import requests
 
@@ -982,7 +982,7 @@ def deprecated_download_dept_csv(department_id):
             assign_dict[r.officer_id] = []
         assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.job_id), check_input(r.unit_id), check_input(r.star_date), check_input(r.resign_date)))
 
-    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
+    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
                    (str(record.id),
                     check_input(record.last_name),
                     check_input(record.first_name),

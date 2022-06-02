@@ -418,7 +418,7 @@ class BrowseForm(Form):
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
     photo = SelectField('photo', validators=[Optional(), AnyOf(['0', '1'])])
     sao_list = SelectField('sao_list', default='', choices=SAO_LIST_CHOICES,
-                       validators=[AnyOf(allowed_values(SAO_LIST_CHOICES))])
+                           validators=[AnyOf(allowed_values(SAO_LIST_CHOICES))])
     min_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     max_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     submit = SubmitField(label='Submit')
