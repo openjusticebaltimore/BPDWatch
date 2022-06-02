@@ -2,14 +2,24 @@
 
 {% block content %}
   <div class="container" role="main">
-    {% with paginate=objects, next_url=url_for(url, page=objects.next_num), prev_url=url_for(url, page=objects.prev_num), location='top' %}
+    {% with paginate=objects,
+      first_url=url_for(url, page=1),
+      prev_url=url_for(url, page=objects.prev_num),
+      next_url=url_for(url, page=objects.next_num),
+      last_url=url_for(url, page=objects.pages),
+      location='top' %}
       {% include "partials/paginate_nav.html" %}
     {% endwith %}
 
     {% block list %}
     {% endblock list%}
 
-    {% with paginate=objects, next_url=url_for(url, page=objects.next_num), prev_url=url_for(url, page=objects.prev_num), location='bottom' %}
+    {% with paginate=objects,
+      first_url=url_for(url, page=1),
+      prev_url=url_for(url,page=objects.prev_num),
+      next_url=url_for(url, page=objects.next_num),
+      last_url=url_for(url, page=objects.pages),
+      location='bottom' %}
       {% include "partials/paginate_nav.html" %}
     {% endwith %}
   </div>
