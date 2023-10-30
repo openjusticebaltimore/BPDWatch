@@ -221,10 +221,11 @@ def template_complaint(officer_id):
     officer_url = url_for('main.officer_profile', officer_id=officer.id)
     template.Root.Pages.Kids[0].Annots[30].update(pdfrw.PdfDict(V='Race: {}, Gender: {}, BPD Watch profile: https://bpdwatch.com{}'.format(officer.race_label(), officer.gender_label(), officer_url)))
     template.Root.AcroForm.update(pdfrw.PdfDict(NeedAppearances=pdfrw.PdfObject('true')))
-    tmp, filepath = mkstemp()
-    pdfrw.PdfWriter().write(filepath, template)
+    output = io.BytesIO()
+    pdfrw.PdfWriter().write(output, template)
+    output.seek(0)
     return send_file(
-        filepath,
+        output,
         attachment_filename='CRBform.pdf'
     )
 
