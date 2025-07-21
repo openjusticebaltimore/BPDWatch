@@ -14,7 +14,7 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from .models import db, Assignment, Department, Officer, User, Salary, Job
+from .models import db, Assignment, Department, Officer, User, Salary, Job, Image, Unit
 from .utils import get_officer, str_is_true, normalize_gender, prompt_yes_no
 
 from .csv_imports import import_csv_files
@@ -61,7 +61,6 @@ def make_admin_user():
 @with_appcontext
 def link_images_to_department():
     """Link existing images to first department"""
-    from app.models import Image, db
     images = Image.query.all()
     print("Linking images to first department:")
     for image in images:
@@ -77,7 +76,6 @@ def link_images_to_department():
 @with_appcontext
 def link_officers_to_department():
     """Links officers and unit_ids to first department"""
-    from app.models import Officer, Unit, db
 
     officers = Officer.query.all()
     units = Unit.query.all()
@@ -564,7 +562,6 @@ def convert_s3_to_minio():
     s3_prefix = 'https://{}.s3.amazonaws.com'.format(bucket_name)
     minio_url = '{}/{}'.format(current_app.config['MINIO_URL'], bucket_name)
 
-    from app.models import Image, db
     images = Image.query.all()
     for image in images:
         if image.filepath.startswith(s3_prefix):
