@@ -560,8 +560,9 @@ def add_job_title(department_id, job_title, is_sworn_officer, order):
 @with_appcontext
 def convert_s3_to_minio():
     """Convert S3 URLs to MinIO URLs in the database."""
-    s3_prefix = f"https://{current_app.config['S3_BUCKET_NAME']}.s3.amazonaws.com"
-    minio_url = current_app.config['MINIO_URL']
+    bucket_name = current_app.config['S3_BUCKET_NAME']
+    s3_prefix = f'https://{bucket_name}.s3.amazonaws.com'
+    minio_url = f'{current_app.config['MINIO_URL']}/{bucket_name}'
 
     from app.models import Image, db
     images = Image.query.all()
