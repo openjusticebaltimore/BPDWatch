@@ -230,7 +230,29 @@ def compute_hash(data_to_hash):
 
 
 def upload_obj_to_s3(file_obj, dest_filename):
-    s3_client = boto3.client('s3')
+    minio_url = current_app.config['MINIO_URL']
+    if minio_url:
+        s3_client = boto3.client('s3',
+            endpoint_url=minio_url,
+            aws_access_key_id=current_app.config['MINIO_ACCESS_KEY'],
+            aws_secret_access_key=current_app.config['MINIO_SECRET_KEY'],
+            aws_session_token=None,
+            config=boto3.session.Config(signature_version='s3v4')
+        )
+        config = s3_client._client_config
+        config.signature_version = botocore.UNSIGNED
+        s3_resource = boto3.resource('s3',
+            endpoint_url=minio_url,
+            aws_access_key_id=current_app.config['MINIO_ACCESS_KEY'],
+            aws_secret_access_key=current_app.config['MINIO_SECRET_KEY'],
+            aws_session_token=None,
+            config=config
+        )
+    else:
+        s3_client = boto3.client('s3')
+        config = s3_client._client_config
+        config.signature_version = botocore.UNSIGNED
+        s3_resource = boto3.resource('s3', config=config)
 
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
@@ -244,10 +266,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
                              s3_path,
                              ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
 
-    config = s3_client._client_config
-    config.signature_version = botocore.UNSIGNED
-    url = boto3.resource(
-        's3', config=config).meta.client.generate_presigned_url(
+    url = s3_resource.meta.client.generate_presigned_url(
         'get_object',
         Params={'Bucket': current_app.config['S3_BUCKET_NAME'],
                 'Key': s3_path})

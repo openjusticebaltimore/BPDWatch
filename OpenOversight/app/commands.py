@@ -8,6 +8,8 @@ from dateutil.parser import parse
 from getpass import getpass
 from typing import Dict, List
 
+import boto3
+import botocore
 import click
 from flask import current_app
 from flask.cli import with_appcontext
@@ -552,3 +554,20 @@ def add_job_title(department_id, job_title, is_sworn_officer, order):
     db.session.add(job)
     print('Added {} to {}'.format(job.job_title, department.name))
     db.session.commit()
+
+
+@click.command()
+@with_appcontext
+def convert_s3_to_minio():
+    """Convert S3 URLs to MinIO URLs in the database."""
+    s3_prefix = f"https://{current_app.config['S3_BUCKET_NAME']}.s3.amazonaws.com"
+    minio_url = current_app.config['MINIO_URL']
+
+    from app.models import Image, db
+    images = Image.query.all()
+    for image in images:
+        if image.filepath.startswith(s3_prefix):
+            image.filepath = image.filepath.replace(s3_prefix, minio_url)
+            print(f"Updated image URL: {image.filepath}")
+    db.session.commit()
+    print("All S3 URLs converted to MinIO URLs.")

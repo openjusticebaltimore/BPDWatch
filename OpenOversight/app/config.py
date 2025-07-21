@@ -32,6 +32,9 @@ class BaseConfig(object):
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
     AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION')
+    MINIO_URL = os.environ.get('MINIO_URL')
+    MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY')
+    MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY')
     S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 
     # Upload Settings
